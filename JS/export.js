@@ -1,8 +1,8 @@
 import { state } from './state.js';
 import { formatarNumeroMilhares } from './utils.js';
 
-export function atualizarSlideExportacao(metricas, nps3M = 0, nps12M = 0) {
-    // 1. Atualizar KPIs do Topo (Mantendo o Total de Respostas)
+export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
+    // 1. Atualizar KPIs do Topo
     document.getElementById('slideTotal').textContent = formatarNumeroMilhares(metricas.totalRespostas);
     document.getElementById('slideNPS').textContent = metricas.npsGeral;
     document.getElementById('slidePromotores').textContent = metricas.percentualPromotores.toFixed(1) + '%';
@@ -10,27 +10,43 @@ export function atualizarSlideExportacao(metricas, nps3M = 0, nps12M = 0) {
     
     // 2. Textos do Centro das Pizzas
     document.getElementById('slideNPSValue').textContent = metricas.npsGeral;
-    document.getElementById('slideNPSValue3M').textContent = nps3M;
-    document.getElementById('slideNPSValue12M').textContent = nps12M;
+    document.getElementById('slideNPSValue3M').textContent = dados3M.nps;
+    document.getElementById('slideNPSValue12M').textContent = dados12M.nps;
 
     // 3. Desenhar as 3 Pizzas de Evolução
     gerarDoughnutNPS('slideChartNPS', 'exportNpsAtual', metricas.npsGeral, '#003D58'); 
-    gerarDoughnutNPS('slideChartNPS3M', 'exportNps3M', nps3M, '#94a3b8');              
-    gerarDoughnutNPS('slideChartNPS12M', 'exportNps12M', nps12M, '#94a3b8');           
+    gerarDoughnutNPS('slideChartNPS3M', 'exportNps3M', dados3M.nps, '#94a3b8');              
+    gerarDoughnutNPS('slideChartNPS12M', 'exportNps12M', dados12M.nps, '#94a3b8');           
 
-    // 4. Atualizar a Barra Horizontal Elegante (CSS)
+    // 4. INJETAR DADOS NAS MINI LEGENDAS (3 Meses e 12 Meses)
+    // Cálculos 3M
+    const pctPro3M = dados3M.total > 0 ? (dados3M.pro / dados3M.total) * 100 : 0;
+    const pctPas3M = dados3M.total > 0 ? (dados3M.pas / dados3M.total) * 100 : 0;
+    const pctDet3M = dados3M.total > 0 ? (dados3M.det / dados3M.total) * 100 : 0;
+    document.getElementById('legenda3MPro').textContent = `${formatarNumeroMilhares(dados3M.pro)} (${pctPro3M.toFixed(1)}%)`;
+    document.getElementById('legenda3MPas').textContent = `${formatarNumeroMilhares(dados3M.pas)} (${pctPas3M.toFixed(1)}%)`;
+    document.getElementById('legenda3MDet').textContent = `${formatarNumeroMilhares(dados3M.det)} (${pctDet3M.toFixed(1)}%)`;
+    document.getElementById('legenda3MTotal').textContent = formatarNumeroMilhares(dados3M.total);
+
+    // Cálculos 12M
+    const pctPro12M = dados12M.total > 0 ? (dados12M.pro / dados12M.total) * 100 : 0;
+    const pctPas12M = dados12M.total > 0 ? (dados12M.pas / dados12M.total) * 100 : 0;
+    const pctDet12M = dados12M.total > 0 ? (dados12M.det / dados12M.total) * 100 : 0;
+    document.getElementById('legenda12MPro').textContent = `${formatarNumeroMilhares(dados12M.pro)} (${pctPro12M.toFixed(1)}%)`;
+    document.getElementById('legenda12MPas').textContent = `${formatarNumeroMilhares(dados12M.pas)} (${pctPas12M.toFixed(1)}%)`;
+    document.getElementById('legenda12MDet').textContent = `${formatarNumeroMilhares(dados12M.det)} (${pctDet12M.toFixed(1)}%)`;
+    document.getElementById('legenda12MTotal').textContent = formatarNumeroMilhares(dados12M.total);
+
+    // 5. Atualizar a Barra Horizontal Elegante do Mês Atual (CSS)
     const totalRec = metricas.totalRespostas;
     const pctPro = totalRec > 0 ? (metricas.totalPromotores / totalRec) * 100 : 0;
     const pctPas = totalRec > 0 ? (metricas.totalPassivos / totalRec) * 100 : 0;
     const pctDet = totalRec > 0 ? (metricas.totalDetratores / totalRec) * 100 : 0;
 
-    // Injeta a largura (width) nas Barras pra elas crescerem animadas
     document.getElementById('barraRecPromotores').style.width = `${pctPro}%`;
     document.getElementById('barraRecPassivos').style.width = `${pctPas}%`;
     document.getElementById('barraRecDetratores').style.width = `${pctDet}%`;
 
-    // 🎯 O CORAÇÃO DO QUE VOCÊ PEDIU:
-    // Injeta a Quantidade Absoluta (Pessoas reais) + a Porcentagem na legenda da barra
     document.getElementById('slideRecPromotores').textContent = `${formatarNumeroMilhares(metricas.totalPromotores)} (${pctPro.toFixed(1)}%)`;
     document.getElementById('slideRecPassivos').textContent = `${formatarNumeroMilhares(metricas.totalPassivos)} (${pctPas.toFixed(1)}%)`;
     document.getElementById('slideRecDetratores').textContent = `${formatarNumeroMilhares(metricas.totalDetratores)} (${pctDet.toFixed(1)}%)`;
@@ -40,54 +56,42 @@ export function atualizarSlideExportacao(metricas, nps3M = 0, nps12M = 0) {
 // 🧠 MÁQUINA DO TEMPO: Calcula o NPS voltando X meses a partir do mês filtrado
 // 
 function calcularNPSRetroativo(mesBase, qtdMeses) {
-    if (!state.resumoPorMes) return 0;
+    if (!state.resumoPorMes) return { nps: 0, pro: 0, pas: 0, det: 0, total: 0 };
     
-    // Pega todos os meses e ordena do mais novo para o mais velho (Ex: 2025-03, 2025-02, 2025-01...)
     const mesesDisponiveis = Object.keys(state.resumoPorMes).sort().reverse();
-    if (mesesDisponiveis.length === 0) return 0;
+    if (mesesDisponiveis.length === 0) return { nps: 0, pro: 0, pas: 0, det: 0, total: 0 };
 
     let startIndex = 0;
     if (mesBase) {
         startIndex = mesesDisponiveis.indexOf(mesBase);
-        if (startIndex === -1) startIndex = 0; // Prevenção de erro
+        if (startIndex === -1) startIndex = 0;
     }
 
-    // Pega a "Fatia" exata de meses que queremos somar
     const mesesFatia = mesesDisponiveis.slice(startIndex, startIndex + qtdMeses);
 
-    let pro = 0, det = 0, total = 0;
+    let pro = 0, pas = 0, det = 0, total = 0;
     mesesFatia.forEach(m => {
         const dados = state.resumoPorMes[m];
         pro += dados.promotores || 0;
+        pas += dados.passivos || 0;
         det += dados.detratores || 0;
         total += (dados.promotores + dados.passivos + dados.detratores) || 0;
     });
 
-    if (total === 0) return 0;
-    return Math.round(((pro / total) * 100) - ((det / total) * 100));
+    if (total === 0) return { nps: 0, pro: 0, pas: 0, det: 0, total: 0 };
+    const nps = Math.round(((pro / total) * 100) - ((det / total) * 100));
+    
+    return { nps, pro, pas, det, total };
 }
 
 export function atualizarSlideComFiltro() {
     const mesSelecionado = document.getElementById('monthFilter').value;
     let metricasPeriodo = !mesSelecionado ? state.totaisGlobais : state.resumoPorMes[mesSelecionado];
-    let periodoTexto = 'Todos os dados';
 
-    if (mesSelecionado) {
-        const [ano, mesNum] = mesSelecionado.split('-');
-        const nomeMes = new Date(ano, mesNum - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-        // Ex: "Outubro de 2024"
-        periodoTexto = nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1) + ' de ' + ano;
-    }
+    // Agora recebemos o pacote completo das viagens no tempo
+    const dados3M = calcularNPSRetroativo(mesSelecionado, 3);
+    const dados12M = calcularNPSRetroativo(mesSelecionado, 12);
 
-    document.getElementById('slidePeriodo').textContent = periodoTexto;
-    const tituloSlide = document.querySelector('.slide-header p');
-    if(tituloSlide) tituloSlide.textContent = (state.unidadeAtual === 'operadora' ? 'Operadora Oeste Saúde - ' : 'Centro Médico Oeste Saúde - ') + periodoTexto;
-
-    // Calcula as viagens no tempo (3 meses e 12 meses)
-    const nps3M = calcularNPSRetroativo(mesSelecionado, 3);
-    const nps12M = calcularNPSRetroativo(mesSelecionado, 12);
-
-    // Normalizar nomes das variáveis
     const metr = mesSelecionado ? {
         totalRespostas: (metricasPeriodo.promotores + metricasPeriodo.passivos + metricasPeriodo.detratores) || 0,
         npsGeral: metricasPeriodo.nps,
@@ -99,8 +103,7 @@ export function atualizarSlideComFiltro() {
         totalDetratores: metricasPeriodo.detratores
     } : metricasPeriodo;
 
-    // 2. Passamos o 'periodoTexto' aqui no final da chamada!
-    atualizarSlideExportacao(metr, nps3M, nps12M, periodoTexto);
+    atualizarSlideExportacao(metr, dados3M, dados12M);
 }
 
 // 
@@ -171,5 +174,6 @@ export async function exportarSlide(event) {
     }
 
 }
+
 
 
