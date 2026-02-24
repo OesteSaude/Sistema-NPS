@@ -6,19 +6,12 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
     if (!dados3M) dados3M = calcularNPSRetroativo(null, 3);
     if (!dados12M) dados12M = calcularNPSRetroativo(null, 12);
 
-    // 🎯 INTELIGÊNCIA BINÁRIA DE CORES E ZONAS DE MERCADO
+    // 🎯 INTELIGÊNCIA DE CORES DE MERCADO (O clássico)
     function obterCoresEZona(score) {
-        // 1. A COR É IMPLACÁVEL (Bateu 84 é Verde. Menos que isso é Vermelho)
-        const corDoCard = score >= 84 ? '#10b981' : '#ef4444'; // Verde ou Vermelho
-        
-        // 2. O NOME DA ZONA (Para saber onde o mercado nos enxerga)
-        let nomeDaZona = '';
-        if (score >= 76) nomeDaZona = 'Zona de Excelência'; 
-        else if (score >= 51) nomeDaZona = 'Zona de Qualidade';  
-        else if (score >= 1)  nomeDaZona = 'Zona de Aperfeiçoamento'; 
-        else nomeDaZona = 'Zona Crítica'; 
-
-        return { cor: corDoCard, zona: nomeDaZona };
+        if (score >= 76) return { cor: '#10b981', zona: 'Zona de Excelência' }; // Verde
+        if (score >= 51) return { cor: '#3b82f6', zona: 'Zona de Qualidade' };  // Azul
+        if (score >= 1)  return { cor: '#f59e0b', zona: 'Zona de Aperfeiçoamento' }; // Amarelo
+        return { cor: '#ef4444', zona: 'Zona Crítica' }; // Vermelho
     }
 
     const npsAtual = obterCoresEZona(metricas.npsGeral);
@@ -33,11 +26,10 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
     // 🔥 INJETANDO COR E ZONA NO CONTAINER DO NPS 🔥
     const containerNPS = document.getElementById('kpiNpsContainer');
     if (containerNPS) {
-        // Pinta o background de Verde ou Vermelho
+        // Pinta o background com a cor da zona de mercado
         containerNPS.style.background = npsAtual.cor;
         containerNPS.style.borderColor = npsAtual.cor;
         
-        // Garante que o texto fique branco pra dar contraste no fundo forte
         document.getElementById('labelNPS').style.color = 'rgba(255, 255, 255, 0.9)';
         
         const slideNPS = document.getElementById('slideNPS');
@@ -61,15 +53,16 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
             statusMeta.style.padding = '3px 8px';
             statusMeta.style.borderRadius = '4px';
         } else {
-            iconeMeta.textContent = '⚠️';
+            // Se tirar 80, por exemplo: Fica Verde (Excelência), mas o termômetro avisa que faltam 4 pontos.
+            iconeMeta.textContent = '🎯';
             const pontosFaltando = 84 - metricas.npsGeral;
-            textoMeta.textContent = `Abaixo da Meta (-${pontosFaltando} pts)`;
+            textoMeta.textContent = `Meta: 84 (Faltam ${pontosFaltando} pts)`;
             statusMeta.style.background = 'transparent';
             statusMeta.style.padding = '0';
         }
     }
 
-    // 2. Textos do Centro das Pizzas (Verde ou Vermelho)
+    // 2. Textos do Centro das Pizzas
     const elementoNPSValue = document.getElementById('slideNPSValue');
     if(elementoNPSValue) { elementoNPSValue.textContent = metricas.npsGeral; elementoNPSValue.style.color = npsAtual.cor; }
 
@@ -79,7 +72,7 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
     const elementoNPSValue12M = document.getElementById('slideNPSValue12M');
     if(elementoNPSValue12M) { elementoNPSValue12M.textContent = dados12M.nps; elementoNPSValue12M.style.color = nps12M.cor; }
 
-    // 3. Desenhar as 3 Pizzas de Evolução (Com a cor Verde ou Vermelha)
+    // 3. Desenhar as 3 Pizzas de Evolução
     gerarDoughnutNPS('slideChartNPS', 'exportNpsAtual', metricas.npsGeral, npsAtual.cor); 
     gerarDoughnutNPS('slideChartNPS3M', 'exportNps3M', dados3M.nps, nps3M.cor);              
     gerarDoughnutNPS('slideChartNPS12M', 'exportNps12M', dados12M.nps, nps12M.cor);           
@@ -206,6 +199,7 @@ export async function exportarSlide(event) {
     }
 
 }
+
 
 
 
