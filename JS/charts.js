@@ -39,7 +39,7 @@ export function gerarGraficoRecomendacao(metricas) {
         data: {
             labels: ['Promotores', 'Neutros', 'Detratores'],
             datasets: [{
-                data: [metricas.totalPromotores, metricas.totalNeutros, metricas.totalDetratores],
+                data: [metricas.totalPromotores, metricas.totalPassivos, metricas.totalDetratores],
                 backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
                 borderRadius: 6
             }]
@@ -70,3 +70,4 @@ export function gerarColetaComparacao() {
     return { totalManuais, totalDigitais };
 
 }
+
