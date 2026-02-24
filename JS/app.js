@@ -169,41 +169,65 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 export function renderizarAbaCidades(respostasBrutas) {
-    // Se não houver dados, aborta
-    if (!respostasBrutas || respostasBrutas.length === 0) return;
+    const grid = document.getElementById('gridCardsCidades');
+    const ctx = document.getElementById('chartNPSCidades');
 
-    // 1. Dicionário para armazenar a matemática de cada cidade
+    // 1. Rastreador no Console (Aperte F12 para ver)
+    console.log("🏙️ [CIDADES] Dados recebidos para processar:", respostasBrutas);
+
+    // Trava de segurança 1: Dados vazios
+    if (!respostasBrutas || !Array.isArray(respostasBrutas) || respostasBrutas.length === 0) {
+        console.warn("🟠 [CIDADES] Nenhum dado recebido. Abortando renderização.");
+        if (grid) grid.innerHTML = '<div class="col-span-full py-10 text-center text-amber-500 font-bold">Nenhuma resposta encontrada no servidor.</div>';
+        return;
+    }
+
     const cidadesStats = {};
+    let cidadesValidasEncontradas = 0;
 
-    respostasBrutas.forEach(item => {
-        // ⚠️ ATENÇÃO: Aqui você precisa garantir que o nome da propriedade bate com o seu JSON/Planilha. 
-        // Geralmente é item.cidade, item.municipio ou item.local. Se for diferente, troque aqui embaixo:
-        const cidade = item.cidade || item.local || item.municipio || "Não Informada";
+    respostasBrutas.forEach((item, index) => {
+        // Tenta achar a cidade de qualquer jeito que a API mandar
+        let cidadeBruta = item.cidade || item.Cidade || item.municipio || "Não Informada";
         
-        // Ignora respostas sem cidade válida
-        if (cidade === "Não Informada" || cidade.trim() === "") return;
+        // Limpa espaços em branco e padroniza
+        let cidade = typeof cidadeBruta === 'string' ? cidadeBruta.trim() : "Não Informada";
 
-        // Se a cidade não existe no dicionário, cria ela
+        if (index === 0) {
+            console.log("🔍 [CIDADES] Estrutura da Primeira Linha:", item);
+            console.log("📍 [CIDADES] Cidade identificada como:", cidade);
+        }
+
+        // Se for vazia ou Não informada, pula sem quebrar
+        if (cidade === "Não Informada" || cidade === "") return;
+
+        cidadesValidasEncontradas++;
+
         if (!cidadesStats[cidade]) {
             cidadesStats[cidade] = { promotores: 0, passivos: 0, detratores: 0, total: 0 };
         }
 
-        // Pega a nota da pessoa (0 a 10)
-        const nota = parseInt(item.nota || item.nps || 0);
+        // Garante que a nota é um número válido
+        const nota = parseInt(item.nota || item.nps || item["Nota 0 a 10"] || -1);
+        if (nota < 0 || nota > 10) return; // Pula notas inválidas
 
-        // Contabiliza
         cidadesStats[cidade].total++;
         if (nota >= 9) cidadesStats[cidade].promotores++;
         else if (nota >= 7) cidadesStats[cidade].passivos++;
         else cidadesStats[cidade].detratores++;
     });
 
-    // 2. Prepara os Arrays para construir a Tela e o Gráfico
+    // Trava de segurança 2: Nenhuma cidade nas respostas
+    if (cidadesValidasEncontradas === 0) {
+        console.warn("🟠 [CIDADES] As respostas existem, mas a coluna de cidades está vazia.");
+        if (grid) grid.innerHTML = '<div class="col-span-full py-10 text-center text-gray-500 font-medium">Nenhuma cidade foi registrada nas avaliações recentes.</div>';
+        return;
+    }
+
+    // 2. Prepara os Arrays
     const nomesCidades = [];
     const npsCidades = [];
     let htmlCards = '';
 
-    // Transforma o dicionário num Array pra gente poder ordenar (do maior NPS pro menor)
     const arrayCidades = Object.keys(cidadesStats).map(cidade => {
         const stats = cidadesStats[cidade];
         const pctPro = (stats.promotores / stats.total) * 100;
@@ -212,41 +236,32 @@ export function renderizarAbaCidades(respostasBrutas) {
         return { cidade, ...stats, nps };
     });
 
-    // Ordena do melhor pro pior NPS
     arrayCidades.sort((a, b) => b.nps - a.nps);
 
-    // 3. Monta o Visual (Gráfico e Cards)
+    // 3. Monta o Visual
     arrayCidades.forEach(dados => {
         nomesCidades.push(dados.cidade);
         npsCidades.push(dados.nps);
 
-        // Cálculos de % para a barrinha do card
         const pctPro = ((dados.promotores / dados.total) * 100).toFixed(0);
         const pctPas = ((dados.passivos / dados.total) * 100).toFixed(0);
         const pctDet = ((dados.detratores / dados.total) * 100).toFixed(0);
 
-        // Lógica de Cores da Oeste Saúde
-        let corBorda = 'bg-slate-300';
-        let corNps = 'text-slate-600';
-        
-        if (dados.nps >= 76) { corBorda = 'bg-emerald-500'; corNps = 'text-emerald-600'; } // Excelência
-        else if (dados.nps >= 51) { corBorda = 'bg-[#00A8B0]'; corNps = 'text-[#00A8B0]'; } // Qualidade
-        else if (dados.nps >= 1) { corBorda = 'bg-amber-500'; corNps = 'text-amber-500'; } // Aperfeiçoamento
-        else { corBorda = 'bg-red-500'; corNps = 'text-red-500'; } // Crítico
+        let corBorda = 'bg-slate-300', corNps = 'text-slate-600';
+        if (dados.nps >= 76) { corBorda = 'bg-emerald-500'; corNps = 'text-emerald-600'; }
+        else if (dados.nps >= 51) { corBorda = 'bg-[#00A8B0]'; corNps = 'text-[#00A8B0]'; }
+        else if (dados.nps >= 1) { corBorda = 'bg-amber-500'; corNps = 'text-amber-500'; }
+        else { corBorda = 'bg-red-500'; corNps = 'text-red-500'; }
 
-        // Monta o Card HTML chique em Tailwind
         htmlCards += `
             <article class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-full h-1 ${corBorda}"></div>
                 <h3 class="text-lg font-bold text-gray-800 mb-1 truncate" title="${dados.cidade}">${dados.cidade}</h3>
                 <p class="text-xs text-gray-500 mb-4">${dados.total} avaliações coletadas</p>
-                
                 <div class="flex items-end gap-2 mb-4">
                     <div class="text-4xl font-black ${corNps}">${dados.nps}</div>
                     <div class="text-xs font-semibold text-gray-400 mb-1 uppercase">NPS Score</div>
                 </div>
-                
-                <!-- Barra de Perfil -->
                 <div class="w-full bg-gray-100 rounded-full h-2 flex overflow-hidden mb-2">
                     <div style="width: ${pctPro}%" class="bg-emerald-500"></div>
                     <div style="width: ${pctPas}%" class="bg-amber-500"></div>
@@ -257,19 +272,13 @@ export function renderizarAbaCidades(respostasBrutas) {
                     <span class="text-amber-600">${pctPas}% PAS</span>
                     <span class="text-red-600">${pctDet}% DET</span>
                 </div>
-            </article>
-        `;
+            </article>`;
     });
 
-    // Injeta os cards na tela
-    const grid = document.getElementById('gridCardsCidades');
-    if(grid) grid.innerHTML = htmlCards;
+    if (grid) grid.innerHTML = htmlCards;
 
-    // 4. Desenha o Gráfico de Barras (Ranking)
-    const ctx = document.getElementById('chartNPSCidades');
+    // 4. Desenha o Gráfico
     if (!ctx) return;
-
-    // Se já tiver um gráfico lá, destroi pra desenhar de novo
     if (window.graficoCidades) window.graficoCidades.destroy();
 
     window.graficoCidades = new Chart(ctx, {
@@ -288,10 +297,10 @@ export function renderizarAbaCidades(respostasBrutas) {
             responsive: true,
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
-            scales: {
-                y: { min: -100, max: 100, grid: { borderDash: [4, 4] } },
-                x: { grid: { display: false } }
-            }
+            scales: { y: { min: -100, max: 100, grid: { borderDash: [4, 4] } }, x: { grid: { display: false } } }
         }
     });
+    
+    console.log("✅ [CIDADES] Renderização concluída com sucesso!");
 }
+
