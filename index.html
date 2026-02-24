@@ -378,11 +378,14 @@
                         </div>
                         
                         <!-- KPI 2 -->
-                        <div class="slide-kpi">
-                            <div class="slide-kpi-label">NPS Score</div>
-                            <div class="slide-kpi-value" id="slideNPS">0</div>
+                        <div id="kpiNpsContainer" style="background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; text-align: center; transition: all 0.3s ease; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                            <div id="labelNPS" style="font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">NPS Score</div>
+                            <div id="slideNPS" style="font-size: 42px; font-weight: 800; color: #003D58; line-height: 1; margin-bottom: 10px;">0</div>
+                            <!-- Badge da Zona de Classificação -->
+                            <div id="slideNPSZona" style="font-size: 10px; font-weight: 800; padding: 4px 12px; border-radius: 20px; background: rgba(255,255,255,0.25); color: #fff; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; border: 1px solid rgba(255,255,255,0.4);">
+                                Calculando...
+                            </div>
                         </div>
-                        
                         <!-- KPI 3 -->
                         <div class="slide-kpi">
                             <div class="slide-kpi-label">Promotores</div>
@@ -541,6 +544,7 @@
 </body>
 
 </html>
+
 
 
 
