@@ -165,4 +165,133 @@ window.exportarSlide = exportLib.exportarSlide;
 window.addEventListener('DOMContentLoaded', () => {
     logger.info('DOM carregado. Chamando init()...');
     init();
+
 });
+
+export function renderizarAbaCidades(respostasBrutas) {
+    // Se não houver dados, aborta
+    if (!respostasBrutas || respostasBrutas.length === 0) return;
+
+    // 1. Dicionário para armazenar a matemática de cada cidade
+    const cidadesStats = {};
+
+    respostasBrutas.forEach(item => {
+        // ⚠️ ATENÇÃO: Aqui você precisa garantir que o nome da propriedade bate com o seu JSON/Planilha. 
+        // Geralmente é item.cidade, item.municipio ou item.local. Se for diferente, troque aqui embaixo:
+        const cidade = item.cidade || item.local || item.municipio || "Não Informada";
+        
+        // Ignora respostas sem cidade válida
+        if (cidade === "Não Informada" || cidade.trim() === "") return;
+
+        // Se a cidade não existe no dicionário, cria ela
+        if (!cidadesStats[cidade]) {
+            cidadesStats[cidade] = { promotores: 0, passivos: 0, detratores: 0, total: 0 };
+        }
+
+        // Pega a nota da pessoa (0 a 10)
+        const nota = parseInt(item.nota || item.nps || 0);
+
+        // Contabiliza
+        cidadesStats[cidade].total++;
+        if (nota >= 9) cidadesStats[cidade].promotores++;
+        else if (nota >= 7) cidadesStats[cidade].passivos++;
+        else cidadesStats[cidade].detratores++;
+    });
+
+    // 2. Prepara os Arrays para construir a Tela e o Gráfico
+    const nomesCidades = [];
+    const npsCidades = [];
+    let htmlCards = '';
+
+    // Transforma o dicionário num Array pra gente poder ordenar (do maior NPS pro menor)
+    const arrayCidades = Object.keys(cidadesStats).map(cidade => {
+        const stats = cidadesStats[cidade];
+        const pctPro = (stats.promotores / stats.total) * 100;
+        const pctDet = (stats.detratores / stats.total) * 100;
+        const nps = Math.round(pctPro - pctDet);
+        return { cidade, ...stats, nps };
+    });
+
+    // Ordena do melhor pro pior NPS
+    arrayCidades.sort((a, b) => b.nps - a.nps);
+
+    // 3. Monta o Visual (Gráfico e Cards)
+    arrayCidades.forEach(dados => {
+        nomesCidades.push(dados.cidade);
+        npsCidades.push(dados.nps);
+
+        // Cálculos de % para a barrinha do card
+        const pctPro = ((dados.promotores / dados.total) * 100).toFixed(0);
+        const pctPas = ((dados.passivos / dados.total) * 100).toFixed(0);
+        const pctDet = ((dados.detratores / dados.total) * 100).toFixed(0);
+
+        // Lógica de Cores da Oeste Saúde
+        let corBorda = 'bg-slate-300';
+        let corNps = 'text-slate-600';
+        
+        if (dados.nps >= 76) { corBorda = 'bg-emerald-500'; corNps = 'text-emerald-600'; } // Excelência
+        else if (dados.nps >= 51) { corBorda = 'bg-[#00A8B0]'; corNps = 'text-[#00A8B0]'; } // Qualidade
+        else if (dados.nps >= 1) { corBorda = 'bg-amber-500'; corNps = 'text-amber-500'; } // Aperfeiçoamento
+        else { corBorda = 'bg-red-500'; corNps = 'text-red-500'; } // Crítico
+
+        // Monta o Card HTML chique em Tailwind
+        htmlCards += `
+            <article class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 ${corBorda}"></div>
+                <h3 class="text-lg font-bold text-gray-800 mb-1 truncate" title="${dados.cidade}">${dados.cidade}</h3>
+                <p class="text-xs text-gray-500 mb-4">${dados.total} avaliações coletadas</p>
+                
+                <div class="flex items-end gap-2 mb-4">
+                    <div class="text-4xl font-black ${corNps}">${dados.nps}</div>
+                    <div class="text-xs font-semibold text-gray-400 mb-1 uppercase">NPS Score</div>
+                </div>
+                
+                <!-- Barra de Perfil -->
+                <div class="w-full bg-gray-100 rounded-full h-2 flex overflow-hidden mb-2">
+                    <div style="width: ${pctPro}%" class="bg-emerald-500"></div>
+                    <div style="width: ${pctPas}%" class="bg-amber-500"></div>
+                    <div style="width: ${pctDet}%" class="bg-red-500"></div>
+                </div>
+                <div class="flex justify-between text-[10px] font-bold uppercase">
+                    <span class="text-emerald-600">${pctPro}% PRO</span>
+                    <span class="text-amber-600">${pctPas}% PAS</span>
+                    <span class="text-red-600">${pctDet}% DET</span>
+                </div>
+            </article>
+        `;
+    });
+
+    // Injeta os cards na tela
+    const grid = document.getElementById('gridCardsCidades');
+    if(grid) grid.innerHTML = htmlCards;
+
+    // 4. Desenha o Gráfico de Barras (Ranking)
+    const ctx = document.getElementById('chartNPSCidades');
+    if (!ctx) return;
+
+    // Se já tiver um gráfico lá, destroi pra desenhar de novo
+    if (window.graficoCidades) window.graficoCidades.destroy();
+
+    window.graficoCidades = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: nomesCidades,
+            datasets: [{
+                label: 'NPS Score',
+                data: npsCidades,
+                backgroundColor: npsCidades.map(nps => nps >= 50 ? '#00A8B0' : (nps >= 0 ? '#f59e0b' : '#ef4444')),
+                borderRadius: 6,
+                barThickness: 30
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { min: -100, max: 100, grid: { borderDash: [4, 4] } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+}
