@@ -14,9 +14,9 @@ export function atualizarSlideExportacao(metricas, nps3M = 0, nps12M = 0) {
     document.getElementById('slideNPSValue12M').textContent = nps12M;
 
     // 3. Desenhar as 3 Pizzas de Evolução
-    gerarDoughnutNPS('slideChartNPS', 'exportNpsAtual', metricas.npsGeral, '#003D58'); // Cor Atual: Azul Escuro
-    gerarDoughnutNPS('slideChartNPS3M', 'exportNps3M', nps3M, '#94a3b8');              // Cores Passadas: Cinza
-    gerarDoughnutNPS('slideChartNPS12M', 'exportNps12M', nps12M, '#94a3b8');           // Cores Passadas: Cinza
+    gerarDoughnutNPS('slideChartNPS', 'exportNpsAtual', metricas.npsGeral, '#003D58'); 
+    gerarDoughnutNPS('slideChartNPS3M', 'exportNps3M', nps3M, '#94a3b8');              
+    gerarDoughnutNPS('slideChartNPS12M', 'exportNps12M', nps12M, '#94a3b8');           
 
     // 4. Atualizar a Barra Horizontal Elegante (CSS)
     const totalRec = metricas.totalRespostas;
@@ -29,10 +29,10 @@ export function atualizarSlideExportacao(metricas, nps3M = 0, nps12M = 0) {
     document.getElementById('barraRecPassivos').style.width = `${pctPas}%`;
     document.getElementById('barraRecDetratores').style.width = `${pctDet}%`;
 
-    // Injeta os percentuais no texto da legenda embaixo da barra
-    document.getElementById('slideRecPromotores').textContent = `${pctPro.toFixed(1)}%`;
-    document.getElementById('slideRecPassivos').textContent = `${pctPas.toFixed(1)}%`;
-    document.getElementById('slideRecDetratores').textContent = `${pctDet.toFixed(1)}%`;
+    // 🎯 O SEGREDO ESTÁ AQUI: Injetamos a Quantidade Bruta + a Porcentagem na legenda
+    document.getElementById('slideRecPromotores').textContent = `${formatarNumeroMilhares(metricas.totalPromotores)} (${pctPro.toFixed(1)}%)`;
+    document.getElementById('slideRecPassivos').textContent = `${formatarNumeroMilhares(metricas.totalPassivos)} (${pctPas.toFixed(1)}%)`;
+    document.getElementById('slideRecDetratores').textContent = `${formatarNumeroMilhares(metricas.totalDetratores)} (${pctDet.toFixed(1)}%)`;
 }
 
 // 
@@ -155,4 +155,5 @@ export async function exportarSlide(event) {
         botao.innerHTML = textoOriginal;
         botao.disabled = false;
     }
+
 }
