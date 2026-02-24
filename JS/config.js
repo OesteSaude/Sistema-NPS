@@ -6,5 +6,7 @@ export const CONFIG = {
         COMENTARIO: "Pode nos contar mais sobre a sua resposta anterior? Por que você recomenda ou não a Oeste Saúde? (Opcional)",
         COLETA_MANUAL: "A pesquisa foi coletada manualmente?",
         TIMESTAMP: "Carimbo de data/hora"
+        CIDADE: "Em qual cidade você foi atendido?"
     }
+
 };
