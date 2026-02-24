@@ -6,8 +6,10 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
     if (!dados3M) dados3M = calcularNPSRetroativo(null, 3);
     if (!dados12M) dados12M = calcularNPSRetroativo(null, 12);
 
-    // 🔥 NOVA REGRA DE ARTE/ESTRATÉGIA: A cor do NPS Geral dita o humor da sala (Corte em 84)
-    const corScoreGeral = metricas.npsGeral >= 84 ? '#10b981' : '#ef4444'; // #10b981 = Verde, #ef4444 = Vermelho
+    // 🔥 REGRA DE CORES UNIVERSAL: O sarrafo é 84 para TUDO
+    const corScoreGeral = metricas.npsGeral >= 84 ? '#10b981' : '#ef4444'; 
+    const corScore3M    = dados3M.nps >= 84 ? '#10b981' : '#ef4444'; 
+    const corScore12M   = dados12M.nps >= 84 ? '#10b981' : '#ef4444'; 
 
     // 1. Atualizar KPIs do Topo
     document.getElementById('slideTotal').textContent = formatarNumeroMilhares(metricas.totalRespostas);
@@ -20,20 +22,23 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
     document.getElementById('slidePromotores').textContent = metricas.percentualPromotores.toFixed(1) + '%';
     document.getElementById('slideNPSTotal').textContent = formatarNumeroMilhares(metricas.totalRespostas);
     
-    // 2. Textos do Centro das Pizzas
-    // Injeta a cor dinamicamente no miolo da pizza
+    // 2. Textos do Centro das Pizzas com Cores Dinâmicas
     const elementoNPSValue = document.getElementById('slideNPSValue');
     elementoNPSValue.textContent = metricas.npsGeral;
     elementoNPSValue.style.color = corScoreGeral; 
 
-    document.getElementById('slideNPSValue3M').textContent = dados3M.nps;
-    document.getElementById('slideNPSValue12M').textContent = dados12M.nps;
+    const elementoNPSValue3M = document.getElementById('slideNPSValue3M');
+    elementoNPSValue3M.textContent = dados3M.nps;
+    elementoNPSValue3M.style.color = corScore3M; // Aplica regra de cor no texto 3M
 
-    // 3. Desenhar as 3 Pizzas de Evolução
-    // O gráfico principal agora também obedece a cor do score (Verde ou Vermelho)
+    const elementoNPSValue12M = document.getElementById('slideNPSValue12M');
+    elementoNPSValue12M.textContent = dados12M.nps;
+    elementoNPSValue12M.style.color = corScore12M; // Aplica regra de cor no texto 12M
+
+    // 3. Desenhar as 3 Pizzas de Evolução com Cores Dinâmicas
     gerarDoughnutNPS('slideChartNPS', 'exportNpsAtual', metricas.npsGeral, corScoreGeral); 
-    gerarDoughnutNPS('slideChartNPS3M', 'exportNps3M', dados3M.nps, '#94a3b8');              
-    gerarDoughnutNPS('slideChartNPS12M', 'exportNps12M', dados12M.nps, '#94a3b8');           
+    gerarDoughnutNPS('slideChartNPS3M', 'exportNps3M', dados3M.nps, corScore3M);     // Aplica na Pizza 3M         
+    gerarDoughnutNPS('slideChartNPS12M', 'exportNps12M', dados12M.nps, corScore12M); // Aplica na Pizza 12M          
 
     // 4. INJETAR DADOS NAS MINI LEGENDAS (3 Meses e 12 Meses)
     const pctPro3M = dados3M.total > 0 ? (dados3M.pro / dados3M.total) * 100 : 0;
@@ -66,7 +71,6 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
     document.getElementById('slideRecPassivos').textContent = `${formatarNumeroMilhares(metricas.totalPassivos)} (${pctPas.toFixed(1)}%)`;
     document.getElementById('slideRecDetratores').textContent = `${formatarNumeroMilhares(metricas.totalDetratores)} (${pctDet.toFixed(1)}%)`;
 }
-
 // 
 // 🧠 MÁQUINA DO TEMPO: Calcula o NPS voltando X meses a partir do mês filtrado
 // 
@@ -189,6 +193,7 @@ export async function exportarSlide(event) {
     }
 
 }
+
 
 
 
