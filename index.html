@@ -319,11 +319,16 @@
                     </div>
                 </article>
             
-                <!-- Grid de Cards Inteligentes (O JS vai injetar os cards aqui dentro) -->
-                <div id="gridCardsCidades" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Loading dos cards... -->
-                    <div class="text-center col-span-full py-10 text-gray-400 font-medium">Processando dados geográficos...</div>
-                </div>
+                <!-- Aqui começa a Box que segura os Cards -->
+                <article class="chart-container border border-gray-100">
+                    <h3 class="text-base font-bold text-gray-800 mb-4">Detalhamento por Unidade</h3>
+                    
+                    <!-- Grid de Cards Inteligentes -->
+                    <div id="gridCardsCidades" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Loading dos cards... -->
+                        <div class="col-span-full py-10 text-center text-gray-400 font-medium">Processando dados geográficos...</div>
+                    </div>
+                </article>
             
             </section>
 
@@ -505,5 +510,6 @@
 </body>
 
 </html>
+
 
 
