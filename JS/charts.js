@@ -37,9 +37,9 @@ export function gerarGraficoRecomendacao(metricas) {
     state.chartsInstances.recomendacao = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ['Promotores', 'Passivos', 'Detratores'],
+            labels: ['Promotores', 'Neutros', 'Detratores'],
             datasets: [{
-                data: [metricas.totalPromotores, metricas.totalPassivos, metricas.totalDetratores],
+                data: [metricas.totalPromotores, metricas.totalNeutros, metricas.totalDetratores],
                 backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
                 borderRadius: 6
             }]
@@ -68,4 +68,5 @@ export function gerarColetaComparacao() {
     });
 
     return { totalManuais, totalDigitais };
+
 }
