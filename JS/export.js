@@ -20,9 +20,9 @@ export function calcularNPSRetroativo(mesBase, qtdMeses) {
     mesesFatia.forEach(m => {
         const dados = state.resumoPorMes[m];
         pro += dados.promotores || 0;
-        pas += dados.passivos || 0;
+        pas += dados.Neutros || 0;
         det += dados.detratores || 0;
-        total += (dados.promotores + dados.passivos + dados.detratores) || 0;
+        total += (dados.promotores + dados.Neutros + dados.detratores) || 0;
     });
 
     if (total === 0) return { nps: 0, pro: 0, pas: 0, det: 0, total: 0 };
@@ -46,7 +46,7 @@ export function atualizarSlideComFiltro() {
     const dados12M = calcularNPSRetroativo(mesSelecionado, 12);
 
     const pro = metricasPeriodo.totalPromotores !== undefined ? metricasPeriodo.totalPromotores : (metricasPeriodo.promotores || 0);
-    const pas = metricasPeriodo.totalPassivos !== undefined ? metricasPeriodo.totalPassivos : (metricasPeriodo.passivos || 0);
+    const pas = metricasPeriodo.totalNeutros !== undefined ? metricasPeriodo.totalNeutros : (metricasPeriodo.Neutros || 0);
     const det = metricasPeriodo.totalDetratores !== undefined ? metricasPeriodo.totalDetratores : (metricasPeriodo.detratores || 0);
     
     const totalResp = metricasPeriodo.totalRespostas !== undefined ? metricasPeriodo.totalRespostas : (pro + pas + det);
@@ -60,10 +60,10 @@ export function atualizarSlideComFiltro() {
         totalRespostas: totalResp,
         npsGeral: npsG,
         percentualPromotores: metricasPeriodo.percentualPromotores !== undefined ? metricasPeriodo.percentualPromotores : pctPro,
-        percentualPassivos: metricasPeriodo.percentualPassivos !== undefined ? metricasPeriodo.percentualPassivos : pctPas,
+        percentualNeutros: metricasPeriodo.percentualNeutros !== undefined ? metricasPeriodo.percentualNeutros : pctPas,
         percentualDetratores: metricasPeriodo.percentualDetratores !== undefined ? metricasPeriodo.percentualDetratores : pctDet,
         totalPromotores: pro,
-        totalPassivos: pas,
+        totalNeutros: pas,
         totalDetratores: det
     };
 
@@ -198,13 +198,13 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
     // Barra Horizontal do Mês Atual (CSS)
     const totalRec = metricas.totalRespostas;
     const pctPro = totalRec > 0 ? (metricas.totalPromotores / totalRec) * 100 : 0;
-    const pctPas = totalRec > 0 ? (metricas.totalPassivos / totalRec) * 100 : 0;
+    const pctPas = totalRec > 0 ? (metricas.totalNeutros / totalRec) * 100 : 0;
     const pctDet = totalRec > 0 ? (metricas.totalDetratores / totalRec) * 100 : 0;
 
     const barraPro = document.getElementById('barraRecPromotores');
     if(barraPro) barraPro.style.width = `${pctPro}%`;
     
-    const barraPas = document.getElementById('barraRecPassivos');
+    const barraPas = document.getElementById('barraRecNeutros');
     if(barraPas) barraPas.style.width = `${pctPas}%`;
     
     const barraDet = document.getElementById('barraRecDetratores');
@@ -213,8 +213,8 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
     const slideRecPro = document.getElementById('slideRecPromotores');
     if(slideRecPro) slideRecPro.textContent = `${formatarNumeroMilhares(metricas.totalPromotores)} (${pctPro.toFixed(1)}%)`;
     
-    const slideRecPas = document.getElementById('slideRecPassivos');
-    if(slideRecPas) slideRecPas.textContent = `${formatarNumeroMilhares(metricas.totalPassivos)} (${pctPas.toFixed(1)}%)`;
+    const slideRecPas = document.getElementById('slideRecNeutros');
+    if(slideRecPas) slideRecPas.textContent = `${formatarNumeroMilhares(metricas.totalNeutros)} (${pctPas.toFixed(1)}%)`;
     
     const slideRecDet = document.getElementById('slideRecDetratores');
     if(slideRecDet) slideRecDet.textContent = `${formatarNumeroMilhares(metricas.totalDetratores)} (${pctDet.toFixed(1)}%)`;
@@ -288,3 +288,4 @@ export async function exportarSlide(event) {
         botao.disabled = false;
     }
 }
+
