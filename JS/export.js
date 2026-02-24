@@ -9,7 +9,7 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
     // 🎯 INTELIGÊNCIA BINÁRIA DE CORES E ZONAS DE MERCADO
     function obterCoresEZona(score) {
         // 1. A COR É IMPLACÁVEL (Bateu 84 é Verde. Menos que isso é Vermelho)
-        const corDoCard = score >= 84 ? '#10b981'; // Verde ou Vermelho
+        const corDoCard = score >= 84 ? '#10b981' // Verde ou Vermelho
         
         // 2. O NOME DA ZONA (Para saber onde o mercado nos enxerga)
         let nomeDaZona = '';
@@ -237,6 +237,7 @@ export async function exportarSlide(event) {
     }
 
 }
+
 
 
 
