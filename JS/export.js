@@ -2,45 +2,64 @@ import { state } from './state.js';
 import { formatarNumeroMilhares } from './utils.js';
 
 export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
-    // A MÁGICA DA AUTO-CURA
+    // Auto-cura do histórico
     if (!dados3M) dados3M = calcularNPSRetroativo(null, 3);
     if (!dados12M) dados12M = calcularNPSRetroativo(null, 12);
 
-    // 🔥 REGRA DE CORES UNIVERSAL: O sarrafo é 84 para TUDO
-    const corScoreGeral = metricas.npsGeral >= 84 ? '#10b981' : '#ef4444'; 
-    const corScore3M    = dados3M.nps >= 84 ? '#10b981' : '#ef4444'; 
-    const corScore12M   = dados12M.nps >= 84 ? '#10b981' : '#ef4444'; 
+    // 🎯 INTELIGÊNCIA DE ZONAS DO NPS (Padrão de Mercado)
+    function obterCoresEZona(score) {
+        if (score >= 76) return { cor: '#10b981', zona: 'Zona de Excelência' }; // Verde (Emerald)
+        if (score >= 51) return { cor: '#3b82f6', zona: 'Zona de Qualidade' };  // Azul (Blue)
+        if (score >= 1)  return { cor: '#f59e0b', zona: 'Zona de Aperfeiçoamento' }; // Amarelo (Amber)
+        return { cor: '#ef4444', zona: 'Zona Crítica' }; // Vermelho (Red)
+    }
+
+    const npsAtual = obterCoresEZona(metricas.npsGeral);
+    const nps3M = obterCoresEZona(dados3M.nps);
+    const nps12M = obterCoresEZona(dados12M.nps);
 
     // 1. Atualizar KPIs do Topo
     document.getElementById('slideTotal').textContent = formatarNumeroMilhares(metricas.totalRespostas);
-    
-    // Injeta a cor dinamicamente no número do topo
-    const elementoSlideNPS = document.getElementById('slideNPS');
-    elementoSlideNPS.textContent = metricas.npsGeral;
-    elementoSlideNPS.style.color = corScoreGeral; 
-
     document.getElementById('slidePromotores').textContent = metricas.percentualPromotores.toFixed(1) + '%';
     document.getElementById('slideNPSTotal').textContent = formatarNumeroMilhares(metricas.totalRespostas);
     
-    // 2. Textos do Centro das Pizzas com Cores Dinâmicas
+    // 🔥 INJETANDO COR E ZONA NO CONTAINER DO NPS 🔥
+    const containerNPS = document.getElementById('kpiNpsContainer');
+    if (containerNPS) {
+        // Pinta o background e tira a borda cinza
+        containerNPS.style.background = npsAtual.cor;
+        containerNPS.style.borderColor = npsAtual.cor;
+        
+        // Regra de Design: Se o fundo é forte (Verde, Azul, Vermelho), o texto TEM que ser branco para dar alto contraste
+        document.getElementById('labelNPS').style.color = 'rgba(255, 255, 255, 0.9)';
+        
+        const slideNPS = document.getElementById('slideNPS');
+        slideNPS.textContent = metricas.npsGeral;
+        slideNPS.style.color = '#ffffff';
+        
+        const slideNPSZona = document.getElementById('slideNPSZona');
+        slideNPSZona.textContent = npsAtual.zona;
+    }
+
+    // 2. Textos do Centro das Pizzas
     const elementoNPSValue = document.getElementById('slideNPSValue');
     elementoNPSValue.textContent = metricas.npsGeral;
-    elementoNPSValue.style.color = corScoreGeral; 
+    elementoNPSValue.style.color = npsAtual.cor; 
 
     const elementoNPSValue3M = document.getElementById('slideNPSValue3M');
     elementoNPSValue3M.textContent = dados3M.nps;
-    elementoNPSValue3M.style.color = corScore3M; // Aplica regra de cor no texto 3M
+    elementoNPSValue3M.style.color = nps3M.cor; 
 
     const elementoNPSValue12M = document.getElementById('slideNPSValue12M');
     elementoNPSValue12M.textContent = dados12M.nps;
-    elementoNPSValue12M.style.color = corScore12M; // Aplica regra de cor no texto 12M
+    elementoNPSValue12M.style.color = nps12M.cor; 
 
-    // 3. Desenhar as 3 Pizzas de Evolução com Cores Dinâmicas
-    gerarDoughnutNPS('slideChartNPS', 'exportNpsAtual', metricas.npsGeral, corScoreGeral); 
-    gerarDoughnutNPS('slideChartNPS3M', 'exportNps3M', dados3M.nps, corScore3M);     // Aplica na Pizza 3M         
-    gerarDoughnutNPS('slideChartNPS12M', 'exportNps12M', dados12M.nps, corScore12M); // Aplica na Pizza 12M          
+    // 3. Desenhar as 3 Pizzas de Evolução mantendo a paleta das zonas
+    gerarDoughnutNPS('slideChartNPS', 'exportNpsAtual', metricas.npsGeral, npsAtual.cor); 
+    gerarDoughnutNPS('slideChartNPS3M', 'exportNps3M', dados3M.nps, nps3M.cor);              
+    gerarDoughnutNPS('slideChartNPS12M', 'exportNps12M', dados12M.nps, nps12M.cor);           
 
-    // 4. INJETAR DADOS NAS MINI LEGENDAS (3 Meses e 12 Meses)
+    // 4. Mini Legendas (3 Meses e 12 Meses)
     const pctPro3M = dados3M.total > 0 ? (dados3M.pro / dados3M.total) * 100 : 0;
     const pctPas3M = dados3M.total > 0 ? (dados3M.pas / dados3M.total) * 100 : 0;
     const pctDet3M = dados3M.total > 0 ? (dados3M.det / dados3M.total) * 100 : 0;
@@ -57,7 +76,7 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
     document.getElementById('legenda12MDet').textContent = `${formatarNumeroMilhares(dados12M.det)} (${pctDet12M.toFixed(1)}%)`;
     document.getElementById('legenda12MTotal').textContent = formatarNumeroMilhares(dados12M.total);
 
-    // 5. Atualizar a Barra Horizontal Elegante do Mês Atual (CSS)
+    // 5. Barra Horizontal do Mês Atual (CSS)
     const totalRec = metricas.totalRespostas;
     const pctPro = totalRec > 0 ? (metricas.totalPromotores / totalRec) * 100 : 0;
     const pctPas = totalRec > 0 ? (metricas.totalPassivos / totalRec) * 100 : 0;
@@ -193,6 +212,7 @@ export async function exportarSlide(event) {
     }
 
 }
+
 
 
 
