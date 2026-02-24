@@ -1,6 +1,7 @@
 import { state } from './state.js';
 import { formatarNumeroMilhares } from './utils.js';
 
+// 1. 🧠 MÁQUINA DO TEMPO (Calcula dados dos meses anteriores)
 export function calcularNPSRetroativo(mesBase, qtdMeses) {
     if (!state.resumoPorMes) return { nps: 0, pro: 0, pas: 0, det: 0, total: 0 };
     
@@ -32,23 +33,18 @@ export function calcularNPSRetroativo(mesBase, qtdMeses) {
 
 // 2. 🎛️ ATUALIZA COM FILTRO (Mapeamento Blindado)
 export function atualizarSlideComFiltro() {
-    // Tenta achar o seletor de mês correto (ajuste o ID se no seu HTML for diferente, ex: filtroMes)
     const seletorMes = document.getElementById('monthFilter') || document.getElementById('filtroMes');
     const mesSelecionado = seletorMes ? seletorMes.value : '';
     
-    // Por padrão, pega o Global
     let metricasPeriodo = state.totaisGlobais; 
     
-    // Se o cara escolheu um mês e esse mês existe no banco, substitui pelo mês
     if (mesSelecionado && state.resumoPorMes && state.resumoPorMes[mesSelecionado]) {
         metricasPeriodo = state.resumoPorMes[mesSelecionado];
     }
 
-    // Calcula as viagens no tempo (3 e 12 meses para trás daquele mês selecionado)
     const dados3M = calcularNPSRetroativo(mesSelecionado, 3);
     const dados12M = calcularNPSRetroativo(mesSelecionado, 12);
 
-    // 🔥 O MAPEAMENTO BLINDADO: Tenta pegar as chaves no formato Global OU no formato Mensal
     const pro = metricasPeriodo.totalPromotores !== undefined ? metricasPeriodo.totalPromotores : (metricasPeriodo.promotores || 0);
     const pas = metricasPeriodo.totalPassivos !== undefined ? metricasPeriodo.totalPassivos : (metricasPeriodo.passivos || 0);
     const det = metricasPeriodo.totalDetratores !== undefined ? metricasPeriodo.totalDetratores : (metricasPeriodo.detratores || 0);
@@ -60,7 +56,6 @@ export function atualizarSlideComFiltro() {
     const pctPas = totalResp > 0 ? (pas / totalResp) * 100 : 0;
     const pctDet = totalResp > 0 ? (det / totalResp) * 100 : 0;
 
-    // Constrói o objeto "perfeito" que a função de desenhar o slide exige
     const metr = {
         totalRespostas: totalResp,
         npsGeral: npsG,
@@ -72,9 +67,21 @@ export function atualizarSlideComFiltro() {
         totalDetratores: det
     };
 
-    // Manda desenhar na tela com os dados formatados à força
     atualizarSlideExportacao(metr, dados3M, dados12M);
 }
+
+// 3. 🎨 DESENHA O SLIDE (A FUNÇÃO QUE TINHA SUMIDO ESTÁ AQUI!)
+export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
+    if (!dados3M) dados3M = calcularNPSRetroativo(null, 3);
+    if (!dados12M) dados12M = calcularNPSRetroativo(null, 12);
+
+    // 🎯 1. REGRA DE MERCADO (Para o Card Principal de KPI)
+    function obterCoresEZona(score) {
+        if (score >= 76) return { cor: '#10b981', zona: 'Zona de Excelência' }; // Verde
+        if (score >= 51) return { cor: '#3b82f6', zona: 'Zona de Qualidade' };  // Azul
+        if (score >= 1)  return { cor: '#f59e0b', zona: 'Zona de Aperfeiçoamento' }; // Amarelo
+        return { cor: '#ef4444', zona: 'Zona Crítica' }; // Vermelho
+    }
 
     // 🍕 2. REGRA DAS PIZZAS IMPLACÁVEIS (Meta Interna: 84)
     function obterCorDaPizza(score) {
@@ -82,13 +89,11 @@ export function atualizarSlideComFiltro() {
     }
 
     const npsAtual = obterCoresEZona(metricas.npsGeral);
-    
-    // Cores exclusivas para as pizzas e seus números centrais
     const corPizzaAtual = obterCorDaPizza(metricas.npsGeral);
     const corPizza3M = obterCorDaPizza(dados3M.nps);
     const corPizza12M = obterCorDaPizza(dados12M.nps);
 
-    // Atualizar IPs do Topo
+    // Atualizar KPIs do Topo
     const slideTotal = document.getElementById('slideTotal');
     if(slideTotal) slideTotal.textContent = formatarNumeroMilhares(metricas.totalRespostas);
     
@@ -104,38 +109,45 @@ export function atualizarSlideComFiltro() {
         containerNPS.style.background = npsAtual.cor;
         containerNPS.style.borderColor = npsAtual.cor;
         
-        document.getElementById('labelNPS').style.color = 'rgba(255, 255, 255, 0.9)';
+        const labelNps = document.getElementById('labelNPS');
+        if(labelNps) labelNps.style.color = 'rgba(255, 255, 255, 0.9)';
         
         const slideNPS = document.getElementById('slideNPS');
-        slideNPS.textContent = metricas.npsGeral;
-        slideNPS.style.color = '#ffffff';
+        if(slideNPS) {
+            slideNPS.textContent = metricas.npsGeral;
+            slideNPS.style.color = '#ffffff';
+        }
         
         const slideNPSZona = document.getElementById('slideNPSZona');
-        slideNPSZona.textContent = npsAtual.zona;
+        if(slideNPSZona) slideNPSZona.textContent = npsAtual.zona;
 
         // O TERMÔMETRO DA META INTERNA (84+)
         const iconeMeta = document.getElementById('iconeMeta');
         const textoMeta = document.getElementById('textoMeta');
         const statusMeta = document.getElementById('statusMetaInterna');
         
-        statusMeta.style.color = 'rgba(255, 255, 255, 0.9)';
+        if(statusMeta) statusMeta.style.color = 'rgba(255, 255, 255, 0.9)';
         
         if (metricas.npsGeral >= 84) {
-            iconeMeta.textContent = '🏆';
-            textoMeta.textContent = 'Meta Atingida (84+)';
-            statusMeta.style.background = 'rgba(255, 255, 255, 0.2)';
-            statusMeta.style.padding = '3px 8px';
-            statusMeta.style.borderRadius = '4px';
+            if(iconeMeta) iconeMeta.textContent = '🏆';
+            if(textoMeta) textoMeta.textContent = 'Meta Atingida (84+)';
+            if(statusMeta) {
+                statusMeta.style.background = 'rgba(255, 255, 255, 0.2)';
+                statusMeta.style.padding = '3px 8px';
+                statusMeta.style.borderRadius = '4px';
+            }
         } else {
-            iconeMeta.textContent = '🎯';
+            if(iconeMeta) iconeMeta.textContent = '🎯';
             const pontosFaltando = 84 - metricas.npsGeral;
-            textoMeta.textContent = `Meta: 84 (Faltam ${pontosFaltando} pts)`;
-            statusMeta.style.background = 'transparent';
-            statusMeta.style.padding = '0';
+            if(textoMeta) textoMeta.textContent = `Meta: 84 (Faltam ${pontosFaltando} pts)`;
+            if(statusMeta) {
+                statusMeta.style.background = 'transparent';
+                statusMeta.style.padding = '0';
+            }
         }
     }
 
-    // 🔥 TEXTOS CENTRAIS DAS PIZZAS (Usando a regra implacável)
+    // 🔥 TEXTOS CENTRAIS DAS PIZZAS
     const elementoNPSValue = document.getElementById('slideNPSValue');
     if(elementoNPSValue) { elementoNPSValue.textContent = metricas.npsGeral; elementoNPSValue.style.color = corPizzaAtual; }
 
@@ -145,12 +157,12 @@ export function atualizarSlideComFiltro() {
     const elementoNPSValue12M = document.getElementById('slideNPSValue12M');
     if(elementoNPSValue12M) { elementoNPSValue12M.textContent = dados12M.nps; elementoNPSValue12M.style.color = corPizza12M; }
 
-    // 🔥 DESENHO DAS BORDAS DAS PIZZAS (Usando a regra implacável)
+    // 🔥 DESENHO DAS BORDAS DAS PIZZAS
     gerarDoughnutNPS('slideChartNPS', 'exportNpsAtual', metricas.npsGeral, corPizzaAtual); 
     gerarDoughnutNPS('slideChartNPS3M', 'exportNps3M', dados3M.nps, corPizza3M);              
     gerarDoughnutNPS('slideChartNPS12M', 'exportNps12M', dados12M.nps, corPizza12M);           
 
-    // Mini Legendas (3 Meses e 12 Meses)
+    // Mini Legendas
     const pctPro3M = dados3M.total > 0 ? (dados3M.pro / dados3M.total) * 100 : 0;
     const pctPas3M = dados3M.total > 0 ? (dados3M.pas / dados3M.total) * 100 : 0;
     const pctDet3M = dados3M.total > 0 ? (dados3M.det / dados3M.total) * 100 : 0;
@@ -207,22 +219,23 @@ export function atualizarSlideComFiltro() {
     const slideRecDet = document.getElementById('slideRecDetratores');
     if(slideRecDet) slideRecDet.textContent = `${formatarNumeroMilhares(metricas.totalDetratores)} (${pctDet.toFixed(1)}%)`;
 }
-// 
-// 🍕 FÁBRICA DE PIZZAS (Cria os 3 gráficos redondos do Slide)
-// 
+
+// 4. 🍕 FÁBRICA DE PIZZAS (Cria os 3 gráficos redondos do Slide)
 function gerarDoughnutNPS(canvasId, instanceKey, npsScore, corPrincipal) {
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
     
     if (state.chartsInstances && state.chartsInstances[instanceKey]) {
-        state.chartsInstances[instanceKey].destroy(); // Mata o gráfico velho pra não encavalar
+        state.chartsInstances[instanceKey].destroy();
     }
     if (!state.chartsInstances) state.chartsInstances = {};
 
     const validNps = isNaN(npsScore) ? 0 : npsScore;
-    const npsNormalizado = (validNps + 100) / 2; // Converte a escala -100/100 para 0-100% (Mágica do Chart.js)
+    const npsNormalizado = (validNps + 100) / 2;
 
-    state.chartsInstances[instanceKey] = new Chart(ctx, {
+    // Se a variável Chart não estiver definida globalmente no export, pode dar erro, 
+    // mas se estava funcionando antes, mantém assim. O ideal seria window.Chart.
+    state.chartsInstances[instanceKey] = new window.Chart(ctx, {
         type: 'doughnut',
         data: { 
             labels: ['NPS', 'Restante'], 
@@ -230,7 +243,7 @@ function gerarDoughnutNPS(canvasId, instanceKey, npsScore, corPrincipal) {
                 data: [npsNormalizado, 100 - npsNormalizado], 
                 backgroundColor: [corPrincipal, '#e2e8f0'], 
                 borderWidth: 0,
-                cutout: '82%' // Furo no meio gigante (deixa a borda fininha e super elegante)
+                cutout: '82%'
             }] 
         },
         options: { 
@@ -238,13 +251,14 @@ function gerarDoughnutNPS(canvasId, instanceKey, npsScore, corPrincipal) {
             maintainAspectRatio: false, 
             plugins: { 
                 legend: { display: false },
-                tooltip: { enabled: false } // Desliga pra não sair quadrado preto no PNG
+                tooltip: { enabled: false }
             },
-            animation: { duration: 0 } // Desativa animação pro html2canvas tirar o print instantâneo
+            animation: { duration: 0 }
         }
     });
 }
 
+// 5. 📸 TIRA A FOTO DO SLIDE (Exportar)
 export async function exportarSlide(event) {
     const elemento = document.getElementById('slideExportacao');
     const botao = event.target.closest('.export-button');
@@ -273,24 +287,4 @@ export async function exportarSlide(event) {
         botao.innerHTML = textoOriginal;
         botao.disabled = false;
     }
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
