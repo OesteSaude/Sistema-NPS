@@ -40,6 +40,28 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
         const slideNPSZona = document.getElementById('slideNPSZona');
         slideNPSZona.textContent = npsAtual.zona;
     }
+            // 🎯 AVALIAÇÃO DA META INTERNA DE ATENDIMENTO (84+)
+        const iconeMeta = document.getElementById('iconeMeta');
+        const textoMeta = document.getElementById('textoMeta');
+        const statusMeta = document.getElementById('statusMetaInterna');
+        
+        // Como o fundo do card é colorido (verde, azul, etc), o texto da meta tem que ser branco/translúcido
+        statusMeta.style.color = 'rgba(255, 255, 255, 0.9)';
+        
+        if (metricas.npsGeral >= 84) {
+            iconeMeta.textContent = '🏆';
+            textoMeta.textContent = 'Meta Interna Atingida (84+)';
+            statusMeta.style.background = 'rgba(255, 255, 255, 0.2)';
+            statusMeta.style.padding = '3px 8px';
+            statusMeta.style.borderRadius = '4px';
+        } else {
+            iconeMeta.textContent = '🎯';
+            // Mostra quantos pontos faltam para bater a meta interna
+            const pontosFaltando = 84 - metricas.npsGeral;
+            textoMeta.textContent = `Meta Interna: 84 (Faltam ${pontosFaltando} pts)`;
+            statusMeta.style.background = 'transparent';
+            statusMeta.style.padding = '0';
+        }
 
     // 2. Textos do Centro das Pizzas
     const elementoNPSValue = document.getElementById('slideNPSValue');
@@ -212,6 +234,7 @@ export async function exportarSlide(event) {
     }
 
 }
+
 
 
 
