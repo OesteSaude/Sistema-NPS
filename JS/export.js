@@ -1,40 +1,50 @@
 import { state } from './state.js';
 import { formatarNumeroMilhares } from './utils.js';
 
-export function atualizarSlideExportacao(metricas, nps3M = 0, nps12M = 0) {
-    // 1. Atualizar KPIs do Topo
+export function atualizarSlideExportacao(metricas, nps3M = 0, nps12M = 0, periodoTexto = 'Todos os dados') {
+    // Atualizar KPIs do Topo
     document.getElementById('slideTotal').textContent = formatarNumeroMilhares(metricas.totalRespostas);
     document.getElementById('slideNPS').textContent = metricas.npsGeral;
     document.getElementById('slidePromotores').textContent = metricas.percentualPromotores.toFixed(1) + '%';
     document.getElementById('slideNPSTotal').textContent = formatarNumeroMilhares(metricas.totalRespostas);
     
-    // 2. Textos do Centro das Pizzas
+    // Textos do Centro das Pizzas
     document.getElementById('slideNPSValue').textContent = metricas.npsGeral;
     document.getElementById('slideNPSValue3M').textContent = nps3M;
     document.getElementById('slideNPSValue12M').textContent = nps12M;
 
-    // 3. Desenhar as 3 Pizzas de Evolução
+    // 🔥 ATUALIZAR OS TÍTULOS DOS GRÁFICOS REDONDOS DINAMICAMENTE 🔥
+    document.getElementById('tituloNPSAtual').textContent = periodoTexto;
+    
+    // Muda a linguagem das médias dependendo se tem filtro ou não
+    if (periodoTexto === 'Todos os dados') {
+        document.getElementById('tituloNPS3M').textContent = 'Média (Últimos 3 Meses)';
+        document.getElementById('tituloNPS12M').textContent = 'Média (Últimos 12 Meses)';
+    } else {
+        document.getElementById('tituloNPS3M').textContent = 'Média (3 Meses Anteriores)';
+        document.getElementById('tituloNPS12M').textContent = 'Média (12 Meses Anteriores)';
+    }
+
+    // Desenhar as 3 Pizzas de Evolução
     gerarDoughnutNPS('slideChartNPS', 'exportNpsAtual', metricas.npsGeral, '#003D58'); 
     gerarDoughnutNPS('slideChartNPS3M', 'exportNps3M', nps3M, '#94a3b8');              
     gerarDoughnutNPS('slideChartNPS12M', 'exportNps12M', nps12M, '#94a3b8');           
 
-    // 4. Atualizar a Barra Horizontal Elegante (CSS)
+    // Atualizar a Barra Horizontal Elegante (CSS)
     const totalRec = metricas.totalRespostas;
     const pctPro = totalRec > 0 ? (metricas.totalPromotores / totalRec) * 100 : 0;
     const pctPas = totalRec > 0 ? (metricas.totalPassivos / totalRec) * 100 : 0;
     const pctDet = totalRec > 0 ? (metricas.totalDetratores / totalRec) * 100 : 0;
 
-    // Injeta a largura (width) nas Barras pra elas crescerem animadas
     document.getElementById('barraRecPromotores').style.width = `${pctPro}%`;
     document.getElementById('barraRecPassivos').style.width = `${pctPas}%`;
     document.getElementById('barraRecDetratores').style.width = `${pctDet}%`;
 
-    // 🎯 O SEGREDO ESTÁ AQUI: Injetamos a Quantidade Bruta + a Porcentagem na legenda
+    // Legenda com as quantidades brutas
     document.getElementById('slideRecPromotores').textContent = `${formatarNumeroMilhares(metricas.totalPromotores)} (${pctPro.toFixed(1)}%)`;
     document.getElementById('slideRecPassivos').textContent = `${formatarNumeroMilhares(metricas.totalPassivos)} (${pctPas.toFixed(1)}%)`;
     document.getElementById('slideRecDetratores').textContent = `${formatarNumeroMilhares(metricas.totalDetratores)} (${pctDet.toFixed(1)}%)`;
 }
-
 // 
 // 🧠 MÁQUINA DO TEMPO: Calcula o NPS voltando X meses a partir do mês filtrado
 // 
@@ -69,6 +79,18 @@ function calcularNPSRetroativo(mesBase, qtdMeses) {
 export function atualizarSlideComFiltro() {
     const mesSelecionado = document.getElementById('monthFilter').value;
     let metricasPeriodo = !mesSelecionado ? state.totaisGlobais : state.resumoPorMes[mesSelecionado];
+    let periodoTexto = 'Todos os dados';
+
+    if (mesSelecionado) {
+        const [ano, mesNum] = mesSelecionado.split('-');
+        const nomeMes = new Date(ano, mesNum - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+        // Ex: "Outubro de 2024"
+        periodoTexto = nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1) + ' de ' + ano;
+    }
+
+    document.getElementById('slidePeriodo').textContent = periodoTexto;
+    const tituloSlide = document.querySelector('.slide-header p');
+    if(tituloSlide) tituloSlide.textContent = (state.unidadeAtual === 'operadora' ? 'Operadora Oeste Saúde - ' : 'Centro Médico Oeste Saúde - ') + periodoTexto;
 
     // Calcula as viagens no tempo (3 meses e 12 meses)
     const nps3M = calcularNPSRetroativo(mesSelecionado, 3);
@@ -86,7 +108,8 @@ export function atualizarSlideComFiltro() {
         totalDetratores: metricasPeriodo.detratores
     } : metricasPeriodo;
 
-    atualizarSlideExportacao(metr, nps3M, nps12M);
+    // 2. Passamos o 'periodoTexto' aqui no final da chamada!
+    atualizarSlideExportacao(metr, nps3M, nps12M, periodoTexto);
 }
 
 // 
@@ -157,3 +180,4 @@ export async function exportarSlide(event) {
     }
 
 }
+
