@@ -1,5 +1,5 @@
 export const CONFIG = {
-    API_URL_BASE: 'https://script.google.com/macros/s/AKfycbzCot5nkmsdcFbLGJ-2MxVwp9JiJ4Xq--QgSXOzH9NoiDWZoS3SvR-socbrKSNqgczFGg/exec',
+    API_URL_BASE: 'https://script.google.com/macros/s/AKfycbyuLWUPGpWnC5-o3vMT3FI67cdKt9Jg62YBHK257Ebnz0-8GcTd-bT5Bf_SUboFEQbUBw/exec',
     COLUNAS: {
         NOTA: "Qual nota você daria para a Oeste Saúde?",
         RECOMENDACAO: "Você recomendaria a Oeste Saúde a um amigo ou familiar?",
@@ -10,4 +10,5 @@ export const CONFIG = {
     }
 
 };
+
 
