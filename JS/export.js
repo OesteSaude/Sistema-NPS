@@ -1,66 +1,12 @@
 import { state } from './state.js';
 import { formatarNumeroMilhares } from './utils.js';
 
-// 1. 🧠 MÁQUINA DO TEMPO (Calcula dados dos meses anteriores)
-export function calcularNPSRetroativo(mesBase, qtdMeses) {
-    if (!state.resumoPorMes) return { nps: 0, pro: 0, pas: 0, det: 0, total: 0 };
-    
-    const mesesDisponiveis = Object.keys(state.resumoPorMes).sort().reverse();
-    if (mesesDisponiveis.length === 0) return { nps: 0, pro: 0, pas: 0, det: 0, total: 0 };
-
-    let startIndex = 0;
-    if (mesBase) {
-        startIndex = mesesDisponiveis.indexOf(mesBase);
-        if (startIndex === -1) startIndex = 0;
-    }
-
-    const mesesFatia = mesesDisponiveis.slice(startIndex, startIndex + qtdMeses);
-
-    let pro = 0, pas = 0, det = 0, total = 0;
-    mesesFatia.forEach(m => {
-        const dados = state.resumoPorMes[m];
-        pro += dados.promotores || 0;
-        pas += dados.passivos || 0;
-        det += dados.detratores || 0;
-        total += (dados.promotores + dados.passivos + dados.detratores) || 0;
-    });
-
-    if (total === 0) return { nps: 0, pro: 0, pas: 0, det: 0, total: 0 };
-    const nps = Math.round(((pro / total) * 100) - ((det / total) * 100));
-    
-    return { nps, pro, pas, det, total };
-}
-
-// 2. 🎛️ ATUALIZA COM FILTRO (Pega os dados quando mexe no seletor de mês)
-export function atualizarSlideComFiltro() {
-    const mesSelecionado = document.getElementById('monthFilter').value;
-    let metricasPeriodo = !mesSelecionado ? state.totaisGlobais : state.resumoPorMes[mesSelecionado];
-
-    // Calcula as viagens no tempo
-    const dados3M = calcularNPSRetroativo(mesSelecionado, 3);
-    const dados12M = calcularNPSRetroativo(mesSelecionado, 12);
-
-    const metr = mesSelecionado ? {
-        totalRespostas: (metricasPeriodo.promotores + metricasPeriodo.passivos + metricasPeriodo.detratores) || 0,
-        npsGeral: metricasPeriodo.nps,
-        percentualPromotores: metricasPeriodo.percentualPromotores,
-        percentualPassivos: metricasPeriodo.percentualPassivos,
-        percentualDetratores: metricasPeriodo.percentualDetratores,
-        totalPromotores: metricasPeriodo.promotores,
-        totalPassivos: metricasPeriodo.passivos,
-        totalDetratores: metricasPeriodo.detratores
-    } : metricasPeriodo;
-
-    atualizarSlideExportacao(metr, dados3M, dados12M);
-}
-
-// 3. 🎨 DESENHA O SLIDE (Com as regras de Zona e Meta Interna)
 export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
     // Auto-cura do histórico caso alguém chame a função direto
     if (!dados3M) dados3M = calcularNPSRetroativo(null, 3);
     if (!dados12M) dados12M = calcularNPSRetroativo(null, 12);
 
-    // 🎯 INTELIGÊNCIA DE CORES DE MERCADO (O clássico)
+    // 🎯 1. REGRA DE MERCADO (Para o Card Principal de KPI)
     function obterCoresEZona(score) {
         if (score >= 76) return { cor: '#10b981', zona: 'Zona de Excelência' }; // Verde
         if (score >= 51) return { cor: '#3b82f6', zona: 'Zona de Qualidade' };  // Azul
@@ -68,11 +14,19 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
         return { cor: '#ef4444', zona: 'Zona Crítica' }; // Vermelho
     }
 
-    const npsAtual = obterCoresEZona(metricas.npsGeral);
-    const nps3M = obterCoresEZona(dados3M.nps);
-    const nps12M = obterCoresEZona(dados12M.nps);
+    // 🍕 2. REGRA DAS PIZZAS IMPLACÁVEIS (Meta Interna: 84)
+    function obterCorDaPizza(score) {
+        return score >= 84 ? '#10b981' : '#ef4444'; // Bateu 84 = Verde. Não bateu = Vermelho sangue.
+    }
 
-    // Atualizar KPIs do Topo
+    const npsAtual = obterCoresEZona(metricas.npsGeral);
+    
+    // Cores exclusivas para as pizzas e seus números centrais
+    const corPizzaAtual = obterCorDaPizza(metricas.npsGeral);
+    const corPizza3M = obterCorDaPizza(dados3M.nps);
+    const corPizza12M = obterCorDaPizza(dados12M.nps);
+
+    // Atualizar IPs do Topo
     const slideTotal = document.getElementById('slideTotal');
     if(slideTotal) slideTotal.textContent = formatarNumeroMilhares(metricas.totalRespostas);
     
@@ -82,10 +36,9 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
     const slideNpsTot = document.getElementById('slideNPSTotal');
     if(slideNpsTot) slideNpsTot.textContent = formatarNumeroMilhares(metricas.totalRespostas);
     
-    // 🔥 INJETANDO COR E ZONA NO CONTAINER DO NPS 🔥
+    // 🔥 INJETANDO COR DE MERCADO NO CONTAINER DO NPS 🔥
     const containerNPS = document.getElementById('kpiNpsContainer');
     if (containerNPS) {
-        // Pinta o background com a cor da zona de mercado
         containerNPS.style.background = npsAtual.cor;
         containerNPS.style.borderColor = npsAtual.cor;
         
@@ -98,7 +51,7 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
         const slideNPSZona = document.getElementById('slideNPSZona');
         slideNPSZona.textContent = npsAtual.zona;
 
-        // 🎯 O TERMÔMETRO DA META INTERNA (84+)
+        // O TERMÔMETRO DA META INTERNA (84+)
         const iconeMeta = document.getElementById('iconeMeta');
         const textoMeta = document.getElementById('textoMeta');
         const statusMeta = document.getElementById('statusMetaInterna');
@@ -112,7 +65,6 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
             statusMeta.style.padding = '3px 8px';
             statusMeta.style.borderRadius = '4px';
         } else {
-            // Fica na cor do mercado, mas a meta avisa quantos pontos faltam pra 84
             iconeMeta.textContent = '🎯';
             const pontosFaltando = 84 - metricas.npsGeral;
             textoMeta.textContent = `Meta: 84 (Faltam ${pontosFaltando} pts)`;
@@ -121,20 +73,20 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
         }
     }
 
-    // Textos do Centro das Pizzas
+    // 🔥 TEXTOS CENTRAIS DAS PIZZAS (Usando a regra implacável)
     const elementoNPSValue = document.getElementById('slideNPSValue');
-    if(elementoNPSValue) { elementoNPSValue.textContent = metricas.npsGeral; elementoNPSValue.style.color = npsAtual.cor; }
+    if(elementoNPSValue) { elementoNPSValue.textContent = metricas.npsGeral; elementoNPSValue.style.color = corPizzaAtual; }
 
     const elementoNPSValue3M = document.getElementById('slideNPSValue3M');
-    if(elementoNPSValue3M) { elementoNPSValue3M.textContent = dados3M.nps; elementoNPSValue3M.style.color = nps3M.cor; }
+    if(elementoNPSValue3M) { elementoNPSValue3M.textContent = dados3M.nps; elementoNPSValue3M.style.color = corPizza3M; }
 
     const elementoNPSValue12M = document.getElementById('slideNPSValue12M');
-    if(elementoNPSValue12M) { elementoNPSValue12M.textContent = dados12M.nps; elementoNPSValue12M.style.color = nps12M.cor; }
+    if(elementoNPSValue12M) { elementoNPSValue12M.textContent = dados12M.nps; elementoNPSValue12M.style.color = corPizza12M; }
 
-    // Desenhar as 3 Pizzas de Evolução
-    gerarDoughnutNPS('slideChartNPS', 'exportNpsAtual', metricas.npsGeral, npsAtual.cor); 
-    gerarDoughnutNPS('slideChartNPS3M', 'exportNps3M', dados3M.nps, nps3M.cor);              
-    gerarDoughnutNPS('slideChartNPS12M', 'exportNps12M', dados12M.nps, nps12M.cor);           
+    // 🔥 DESENHO DAS BORDAS DAS PIZZAS (Usando a regra implacável)
+    gerarDoughnutNPS('slideChartNPS', 'exportNpsAtual', metricas.npsGeral, corPizzaAtual); 
+    gerarDoughnutNPS('slideChartNPS3M', 'exportNps3M', dados3M.nps, corPizza3M);              
+    gerarDoughnutNPS('slideChartNPS12M', 'exportNps12M', dados12M.nps, corPizza12M);           
 
     // Mini Legendas (3 Meses e 12 Meses)
     const pctPro3M = dados3M.total > 0 ? (dados3M.pro / dados3M.total) * 100 : 0;
@@ -193,7 +145,6 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
     const slideRecDet = document.getElementById('slideRecDetratores');
     if(slideRecDet) slideRecDet.textContent = `${formatarNumeroMilhares(metricas.totalDetratores)} (${pctDet.toFixed(1)}%)`;
 }
-
 // 
 // 🍕 FÁBRICA DE PIZZAS (Cria os 3 gráficos redondos do Slide)
 // 
@@ -262,6 +213,7 @@ export async function exportarSlide(event) {
     }
 
 }
+
 
 
 
