@@ -1,6 +1,35 @@
 import { state } from './state.js';
 import { formatarNumeroMilhares } from './utils.js';
 
+export function calcularNPSRetroativo(mesBase, qtdMeses) {
+    if (!state.resumoPorMes) return { nps: 0, pro: 0, pas: 0, det: 0, total: 0 };
+    
+    const mesesDisponiveis = Object.keys(state.resumoPorMes).sort().reverse();
+    if (mesesDisponiveis.length === 0) return { nps: 0, pro: 0, pas: 0, det: 0, total: 0 };
+
+    let startIndex = 0;
+    if (mesBase) {
+        startIndex = mesesDisponiveis.indexOf(mesBase);
+        if (startIndex === -1) startIndex = 0;
+    }
+
+    const mesesFatia = mesesDisponiveis.slice(startIndex, startIndex + qtdMeses);
+
+    let pro = 0, pas = 0, det = 0, total = 0;
+    mesesFatia.forEach(m => {
+        const dados = state.resumoPorMes[m];
+        pro += dados.promotores || 0;
+        pas += dados.passivos || 0;
+        det += dados.detratores || 0;
+        total += (dados.promotores + dados.passivos + dados.detratores) || 0;
+    });
+
+    if (total === 0) return { nps: 0, pro: 0, pas: 0, det: 0, total: 0 };
+    const nps = Math.round(((pro / total) * 100) - ((det / total) * 100));
+    
+    return { nps, pro, pas, det, total };
+}
+
 export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
     // Auto-cura do histórico caso alguém chame a função direto
     if (!dados3M) dados3M = calcularNPSRetroativo(null, 3);
@@ -213,6 +242,7 @@ export async function exportarSlide(event) {
     }
 
 }
+
 
 
 
