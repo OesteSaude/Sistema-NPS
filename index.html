@@ -408,7 +408,7 @@
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
             <!-- Mês Atual -->
             <div class="slide-chart-section" style="position: relative;">
-                <div style="text-align: center; font-size: 13px; font-weight: 700; color: #003D58; margin-bottom: 15px;">Período Analisado</div>
+                <div id="tituloNPSAtual" style="text-align: center; font-size: 14px; font-weight: 800; color: #003D58; margin-bottom: 15px; text-transform: uppercase;">Período Analisado</div>
                 <div class="slide-chart-wrapper" style="width: 180px; height: 180px; margin: 0 auto; position: relative;">
                     <canvas id="slideChartNPS"></canvas>
                     <div class="slide-chart-center-text" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
@@ -420,7 +420,7 @@
 
             <!-- 3 Meses -->
             <div class="slide-chart-section" style="position: relative; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;">
-                <div style="text-align: center; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 15px;">Média (Últimos 3 Meses)</div>
+                <div id="tituloNPS3M" style="text-align: center; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 15px;">Média (Últimos 3 Meses)</div>
                 <div class="slide-chart-wrapper" style="width: 160px; height: 160px; margin: 0 auto; position: relative;">
                     <canvas id="slideChartNPS3M"></canvas>
                     <div class="slide-chart-center-text" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
@@ -432,7 +432,7 @@
 
             <!-- 12 Meses -->
             <div class="slide-chart-section" style="position: relative;">
-                <div style="text-align: center; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 15px;">Média (Últimos 12 Meses)</div>
+                <div id="tituloNPS12M" style="text-align: center; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 15px;">Média (Últimos 12 Meses)</div>
                 <div class="slide-chart-wrapper" style="width: 160px; height: 160px; margin: 0 auto; position: relative;">
                     <canvas id="slideChartNPS12M"></canvas>
                     <div class="slide-chart-center-text" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
@@ -510,6 +510,7 @@
 </body>
 
 </html>
+
 
 
 
