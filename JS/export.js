@@ -2,6 +2,10 @@ import { state } from './state.js';
 import { formatarNumeroMilhares } from './utils.js';
 
 export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
+    // 🔥 A MÁGICA DA AUTO-CURA (Se não vier dados do passado, calcula na hora!)
+    if (!dados3M) dados3M = calcularNPSRetroativo(null, 3);
+    if (!dados12M) dados12M = calcularNPSRetroativo(null, 12);
+
     // 1. Atualizar KPIs do Topo
     document.getElementById('slideTotal').textContent = formatarNumeroMilhares(metricas.totalRespostas);
     document.getElementById('slideNPS').textContent = metricas.npsGeral;
@@ -174,6 +178,7 @@ export async function exportarSlide(event) {
     }
 
 }
+
 
 
 
