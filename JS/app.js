@@ -105,10 +105,14 @@ function processarDados() {
         exportLib.atualizarSlideExportacao(state.totaisGlobais);
         logger.info('Slide de diretoria pré-renderizado no DOM invisível.');
 
+        // 🔥 O GATILHO DA NOSSA ABA DE CIDADES 🔥
+        renderizarAbaCidades(state.dadosGlobais);
+        logger.info('Aba de Cidades renderizada.');
+
         console.timeEnd('🎨 Tempo de Renderização UI');
     } catch (error) {
         logger.error('Erro na hora de desenhar os dados na tela (processarDados):', error);
-        throw error; // Repassa pro catch do init()
+        throw error; 
     }
 }
 
@@ -303,4 +307,5 @@ export function renderizarAbaCidades(respostasBrutas) {
     
     console.log("✅ [CIDADES] Renderização concluída com sucesso!");
 }
+
 
