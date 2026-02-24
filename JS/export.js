@@ -30,18 +30,51 @@ export function calcularNPSRetroativo(mesBase, qtdMeses) {
     return { nps, pro, pas, det, total };
 }
 
-export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
-    // Auto-cura do histórico caso alguém chame a função direto
-    if (!dados3M) dados3M = calcularNPSRetroativo(null, 3);
-    if (!dados12M) dados12M = calcularNPSRetroativo(null, 12);
-
-    // 🎯 1. REGRA DE MERCADO (Para o Card Principal de KPI)
-    function obterCoresEZona(score) {
-        if (score >= 76) return { cor: '#10b981', zona: 'Zona de Excelência' }; // Verde
-        if (score >= 51) return { cor: '#3b82f6', zona: 'Zona de Qualidade' };  // Azul
-        if (score >= 1)  return { cor: '#f59e0b', zona: 'Zona de Aperfeiçoamento' }; // Amarelo
-        return { cor: '#ef4444', zona: 'Zona Crítica' }; // Vermelho
+// 2. 🎛️ ATUALIZA COM FILTRO (Mapeamento Blindado)
+export function atualizarSlideComFiltro() {
+    // Tenta achar o seletor de mês correto (ajuste o ID se no seu HTML for diferente, ex: filtroMes)
+    const seletorMes = document.getElementById('monthFilter') || document.getElementById('filtroMes');
+    const mesSelecionado = seletorMes ? seletorMes.value : '';
+    
+    // Por padrão, pega o Global
+    let metricasPeriodo = state.totaisGlobais; 
+    
+    // Se o cara escolheu um mês e esse mês existe no banco, substitui pelo mês
+    if (mesSelecionado && state.resumoPorMes && state.resumoPorMes[mesSelecionado]) {
+        metricasPeriodo = state.resumoPorMes[mesSelecionado];
     }
+
+    // Calcula as viagens no tempo (3 e 12 meses para trás daquele mês selecionado)
+    const dados3M = calcularNPSRetroativo(mesSelecionado, 3);
+    const dados12M = calcularNPSRetroativo(mesSelecionado, 12);
+
+    // 🔥 O MAPEAMENTO BLINDADO: Tenta pegar as chaves no formato Global OU no formato Mensal
+    const pro = metricasPeriodo.totalPromotores !== undefined ? metricasPeriodo.totalPromotores : (metricasPeriodo.promotores || 0);
+    const pas = metricasPeriodo.totalPassivos !== undefined ? metricasPeriodo.totalPassivos : (metricasPeriodo.passivos || 0);
+    const det = metricasPeriodo.totalDetratores !== undefined ? metricasPeriodo.totalDetratores : (metricasPeriodo.detratores || 0);
+    
+    const totalResp = metricasPeriodo.totalRespostas !== undefined ? metricasPeriodo.totalRespostas : (pro + pas + det);
+    const npsG = metricasPeriodo.npsGeral !== undefined ? metricasPeriodo.npsGeral : (metricasPeriodo.nps || 0);
+
+    const pctPro = totalResp > 0 ? (pro / totalResp) * 100 : 0;
+    const pctPas = totalResp > 0 ? (pas / totalResp) * 100 : 0;
+    const pctDet = totalResp > 0 ? (det / totalResp) * 100 : 0;
+
+    // Constrói o objeto "perfeito" que a função de desenhar o slide exige
+    const metr = {
+        totalRespostas: totalResp,
+        npsGeral: npsG,
+        percentualPromotores: metricasPeriodo.percentualPromotores !== undefined ? metricasPeriodo.percentualPromotores : pctPro,
+        percentualPassivos: metricasPeriodo.percentualPassivos !== undefined ? metricasPeriodo.percentualPassivos : pctPas,
+        percentualDetratores: metricasPeriodo.percentualDetratores !== undefined ? metricasPeriodo.percentualDetratores : pctDet,
+        totalPromotores: pro,
+        totalPassivos: pas,
+        totalDetratores: det
+    };
+
+    // Manda desenhar na tela com os dados formatados à força
+    atualizarSlideExportacao(metr, dados3M, dados12M);
+}
 
     // 🍕 2. REGRA DAS PIZZAS IMPLACÁVEIS (Meta Interna: 84)
     function obterCorDaPizza(score) {
@@ -242,6 +275,7 @@ export async function exportarSlide(event) {
     }
 
 }
+
 
 
 
