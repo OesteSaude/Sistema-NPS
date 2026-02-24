@@ -2,28 +2,40 @@ import { state } from './state.js';
 import { formatarNumeroMilhares } from './utils.js';
 
 export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
-    // 🔥 A MÁGICA DA AUTO-CURA (Se não vier dados do passado, calcula na hora!)
+    // A MÁGICA DA AUTO-CURA
     if (!dados3M) dados3M = calcularNPSRetroativo(null, 3);
     if (!dados12M) dados12M = calcularNPSRetroativo(null, 12);
 
+    // 🔥 NOVA REGRA DE ARTE/ESTRATÉGIA: A cor do NPS Geral dita o humor da sala (Corte em 84)
+    const corScoreGeral = metricas.npsGeral >= 84 ? '#10b981' : '#ef4444'; // #10b981 = Verde, #ef4444 = Vermelho
+
     // 1. Atualizar KPIs do Topo
     document.getElementById('slideTotal').textContent = formatarNumeroMilhares(metricas.totalRespostas);
-    document.getElementById('slideNPS').textContent = metricas.npsGeral;
+    
+    // Injeta a cor dinamicamente no número do topo
+    const elementoSlideNPS = document.getElementById('slideNPS');
+    elementoSlideNPS.textContent = metricas.npsGeral;
+    elementoSlideNPS.style.color = corScoreGeral; 
+
     document.getElementById('slidePromotores').textContent = metricas.percentualPromotores.toFixed(1) + '%';
     document.getElementById('slideNPSTotal').textContent = formatarNumeroMilhares(metricas.totalRespostas);
     
     // 2. Textos do Centro das Pizzas
-    document.getElementById('slideNPSValue').textContent = metricas.npsGeral;
+    // Injeta a cor dinamicamente no miolo da pizza
+    const elementoNPSValue = document.getElementById('slideNPSValue');
+    elementoNPSValue.textContent = metricas.npsGeral;
+    elementoNPSValue.style.color = corScoreGeral; 
+
     document.getElementById('slideNPSValue3M').textContent = dados3M.nps;
     document.getElementById('slideNPSValue12M').textContent = dados12M.nps;
 
     // 3. Desenhar as 3 Pizzas de Evolução
-    gerarDoughnutNPS('slideChartNPS', 'exportNpsAtual', metricas.npsGeral, '#003D58'); 
+    // O gráfico principal agora também obedece a cor do score (Verde ou Vermelho)
+    gerarDoughnutNPS('slideChartNPS', 'exportNpsAtual', metricas.npsGeral, corScoreGeral); 
     gerarDoughnutNPS('slideChartNPS3M', 'exportNps3M', dados3M.nps, '#94a3b8');              
     gerarDoughnutNPS('slideChartNPS12M', 'exportNps12M', dados12M.nps, '#94a3b8');           
 
     // 4. INJETAR DADOS NAS MINI LEGENDAS (3 Meses e 12 Meses)
-    // Cálculos 3M
     const pctPro3M = dados3M.total > 0 ? (dados3M.pro / dados3M.total) * 100 : 0;
     const pctPas3M = dados3M.total > 0 ? (dados3M.pas / dados3M.total) * 100 : 0;
     const pctDet3M = dados3M.total > 0 ? (dados3M.det / dados3M.total) * 100 : 0;
@@ -32,7 +44,6 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
     document.getElementById('legenda3MDet').textContent = `${formatarNumeroMilhares(dados3M.det)} (${pctDet3M.toFixed(1)}%)`;
     document.getElementById('legenda3MTotal').textContent = formatarNumeroMilhares(dados3M.total);
 
-    // Cálculos 12M
     const pctPro12M = dados12M.total > 0 ? (dados12M.pro / dados12M.total) * 100 : 0;
     const pctPas12M = dados12M.total > 0 ? (dados12M.pas / dados12M.total) * 100 : 0;
     const pctDet12M = dados12M.total > 0 ? (dados12M.det / dados12M.total) * 100 : 0;
@@ -178,6 +189,7 @@ export async function exportarSlide(event) {
     }
 
 }
+
 
 
 
