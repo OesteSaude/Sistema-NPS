@@ -1,8 +1,62 @@
 import { state } from './state.js';
 import { formatarNumeroMilhares } from './utils.js';
 
+// 1. 🧠 MÁQUINA DO TEMPO (Calcula dados dos meses anteriores)
+export function calcularNPSRetroativo(mesBase, qtdMeses) {
+    if (!state.resumoPorMes) return { nps: 0, pro: 0, pas: 0, det: 0, total: 0 };
+    
+    const mesesDisponiveis = Object.keys(state.resumoPorMes).sort().reverse();
+    if (mesesDisponiveis.length === 0) return { nps: 0, pro: 0, pas: 0, det: 0, total: 0 };
+
+    let startIndex = 0;
+    if (mesBase) {
+        startIndex = mesesDisponiveis.indexOf(mesBase);
+        if (startIndex === -1) startIndex = 0;
+    }
+
+    const mesesFatia = mesesDisponiveis.slice(startIndex, startIndex + qtdMeses);
+
+    let pro = 0, pas = 0, det = 0, total = 0;
+    mesesFatia.forEach(m => {
+        const dados = state.resumoPorMes[m];
+        pro += dados.promotores || 0;
+        pas += dados.passivos || 0;
+        det += dados.detratores || 0;
+        total += (dados.promotores + dados.passivos + dados.detratores) || 0;
+    });
+
+    if (total === 0) return { nps: 0, pro: 0, pas: 0, det: 0, total: 0 };
+    const nps = Math.round(((pro / total) * 100) - ((det / total) * 100));
+    
+    return { nps, pro, pas, det, total };
+}
+
+// 2. 🎛️ ATUALIZA COM FILTRO (Pega os dados quando mexe no seletor de mês)
+export function atualizarSlideComFiltro() {
+    const mesSelecionado = document.getElementById('monthFilter').value;
+    let metricasPeriodo = !mesSelecionado ? state.totaisGlobais : state.resumoPorMes[mesSelecionado];
+
+    // Calcula as viagens no tempo
+    const dados3M = calcularNPSRetroativo(mesSelecionado, 3);
+    const dados12M = calcularNPSRetroativo(mesSelecionado, 12);
+
+    const metr = mesSelecionado ? {
+        totalRespostas: (metricasPeriodo.promotores + metricasPeriodo.passivos + metricasPeriodo.detratores) || 0,
+        npsGeral: metricasPeriodo.nps,
+        percentualPromotores: metricasPeriodo.percentualPromotores,
+        percentualPassivos: metricasPeriodo.percentualPassivos,
+        percentualDetratores: metricasPeriodo.percentualDetratores,
+        totalPromotores: metricasPeriodo.promotores,
+        totalPassivos: metricasPeriodo.passivos,
+        totalDetratores: metricasPeriodo.detratores
+    } : metricasPeriodo;
+
+    atualizarSlideExportacao(metr, dados3M, dados12M);
+}
+
+// 3. 🎨 DESENHA O SLIDE (Com as regras de Zona e Meta Interna)
 export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
-    // Auto-cura do histórico
+    // Auto-cura do histórico caso alguém chame a função direto
     if (!dados3M) dados3M = calcularNPSRetroativo(null, 3);
     if (!dados12M) dados12M = calcularNPSRetroativo(null, 12);
 
@@ -18,10 +72,15 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
     const nps3M = obterCoresEZona(dados3M.nps);
     const nps12M = obterCoresEZona(dados12M.nps);
 
-    // 1. Atualizar KPIs do Topo
-    document.getElementById('slideTotal').textContent = formatarNumeroMilhares(metricas.totalRespostas);
-    document.getElementById('slidePromotores').textContent = metricas.percentualPromotores.toFixed(1) + '%';
-    document.getElementById('slideNPSTotal').textContent = formatarNumeroMilhares(metricas.totalRespostas);
+    // Atualizar KPIs do Topo
+    const slideTotal = document.getElementById('slideTotal');
+    if(slideTotal) slideTotal.textContent = formatarNumeroMilhares(metricas.totalRespostas);
+    
+    const slideProm = document.getElementById('slidePromotores');
+    if(slideProm) slideProm.textContent = metricas.percentualPromotores.toFixed(1) + '%';
+    
+    const slideNpsTot = document.getElementById('slideNPSTotal');
+    if(slideNpsTot) slideNpsTot.textContent = formatarNumeroMilhares(metricas.totalRespostas);
     
     // 🔥 INJETANDO COR E ZONA NO CONTAINER DO NPS 🔥
     const containerNPS = document.getElementById('kpiNpsContainer');
@@ -53,7 +112,7 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
             statusMeta.style.padding = '3px 8px';
             statusMeta.style.borderRadius = '4px';
         } else {
-            // Se tirar 80, por exemplo: Fica Verde (Excelência), mas o termômetro avisa que faltam 4 pontos.
+            // Fica na cor do mercado, mas a meta avisa quantos pontos faltam pra 84
             iconeMeta.textContent = '🎯';
             const pontosFaltando = 84 - metricas.npsGeral;
             textoMeta.textContent = `Meta: 84 (Faltam ${pontosFaltando} pts)`;
@@ -62,7 +121,7 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
         }
     }
 
-    // 2. Textos do Centro das Pizzas
+    // Textos do Centro das Pizzas
     const elementoNPSValue = document.getElementById('slideNPSValue');
     if(elementoNPSValue) { elementoNPSValue.textContent = metricas.npsGeral; elementoNPSValue.style.color = npsAtual.cor; }
 
@@ -72,63 +131,67 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M) {
     const elementoNPSValue12M = document.getElementById('slideNPSValue12M');
     if(elementoNPSValue12M) { elementoNPSValue12M.textContent = dados12M.nps; elementoNPSValue12M.style.color = nps12M.cor; }
 
-    // 3. Desenhar as 3 Pizzas de Evolução
+    // Desenhar as 3 Pizzas de Evolução
     gerarDoughnutNPS('slideChartNPS', 'exportNpsAtual', metricas.npsGeral, npsAtual.cor); 
     gerarDoughnutNPS('slideChartNPS3M', 'exportNps3M', dados3M.nps, nps3M.cor);              
     gerarDoughnutNPS('slideChartNPS12M', 'exportNps12M', dados12M.nps, nps12M.cor);           
 
-    // 4. Mini Legendas (3 Meses e 12 Meses)
+    // Mini Legendas (3 Meses e 12 Meses)
     const pctPro3M = dados3M.total > 0 ? (dados3M.pro / dados3M.total) * 100 : 0;
     const pctPas3M = dados3M.total > 0 ? (dados3M.pas / dados3M.total) * 100 : 0;
     const pctDet3M = dados3M.total > 0 ? (dados3M.det / dados3M.total) * 100 : 0;
-    document.getElementById('legenda3MPro').textContent = `${formatarNumeroMilhares(dados3M.pro)} (${pctPro3M.toFixed(1)}%)`;
-    document.getElementById('legenda3MPas').textContent = `${formatarNumeroMilhares(dados3M.pas)} (${pctPas3M.toFixed(1)}%)`;
-    document.getElementById('legenda3MDet').textContent = `${formatarNumeroMilhares(dados3M.det)} (${pctDet3M.toFixed(1)}%)`;
-    document.getElementById('legenda3MTotal').textContent = formatarNumeroMilhares(dados3M.total);
+    
+    const leg3MPro = document.getElementById('legenda3MPro');
+    if(leg3MPro) leg3MPro.textContent = `${formatarNumeroMilhares(dados3M.pro)} (${pctPro3M.toFixed(1)}%)`;
+    
+    const leg3MPas = document.getElementById('legenda3MPas');
+    if(leg3MPas) leg3MPas.textContent = `${formatarNumeroMilhares(dados3M.pas)} (${pctPas3M.toFixed(1)}%)`;
+    
+    const leg3MDet = document.getElementById('legenda3MDet');
+    if(leg3MDet) leg3MDet.textContent = `${formatarNumeroMilhares(dados3M.det)} (${pctDet3M.toFixed(1)}%)`;
+    
+    const leg3MTot = document.getElementById('legenda3MTotal');
+    if(leg3MTot) leg3MTot.textContent = formatarNumeroMilhares(dados3M.total);
 
     const pctPro12M = dados12M.total > 0 ? (dados12M.pro / dados12M.total) * 100 : 0;
     const pctPas12M = dados12M.total > 0 ? (dados12M.pas / dados12M.total) * 100 : 0;
     const pctDet12M = dados12M.total > 0 ? (dados12M.det / dados12M.total) * 100 : 0;
-    document.getElementById('legenda12MPro').textContent = `${formatarNumeroMilhares(dados12M.pro)} (${pctPro12M.toFixed(1)}%)`;
-    document.getElementById('legenda12MPas').textContent = `${formatarNumeroMilhares(dados12M.pas)} (${pctPas12M.toFixed(1)}%)`;
-    document.getElementById('legenda12MDet').textContent = `${formatarNumeroMilhares(dados12M.det)} (${pctDet12M.toFixed(1)}%)`;
-    document.getElementById('legenda12MTotal').textContent = formatarNumeroMilhares(dados12M.total);
+    
+    const leg12MPro = document.getElementById('legenda12MPro');
+    if(leg12MPro) leg12MPro.textContent = `${formatarNumeroMilhares(dados12M.pro)} (${pctPro12M.toFixed(1)}%)`;
+    
+    const leg12MPas = document.getElementById('legenda12MPas');
+    if(leg12MPas) leg12MPas.textContent = `${formatarNumeroMilhares(dados12M.pas)} (${pctPas12M.toFixed(1)}%)`;
+    
+    const leg12MDet = document.getElementById('legenda12MDet');
+    if(leg12MDet) leg12MDet.textContent = `${formatarNumeroMilhares(dados12M.det)} (${pctDet12M.toFixed(1)}%)`;
+    
+    const leg12MTot = document.getElementById('legenda12MTotal');
+    if(leg12MTot) leg12MTot.textContent = formatarNumeroMilhares(dados12M.total);
 
-    // 5. Barra Horizontal do Mês Atual (CSS)
+    // Barra Horizontal do Mês Atual (CSS)
     const totalRec = metricas.totalRespostas;
     const pctPro = totalRec > 0 ? (metricas.totalPromotores / totalRec) * 100 : 0;
     const pctPas = totalRec > 0 ? (metricas.totalPassivos / totalRec) * 100 : 0;
     const pctDet = totalRec > 0 ? (metricas.totalDetratores / totalRec) * 100 : 0;
 
-    document.getElementById('barraRecPromotores').style.width = `${pctPro}%`;
-    document.getElementById('barraRecPassivos').style.width = `${pctPas}%`;
-    document.getElementById('barraRecDetratores').style.width = `${pctDet}%`;
+    const barraPro = document.getElementById('barraRecPromotores');
+    if(barraPro) barraPro.style.width = `${pctPro}%`;
+    
+    const barraPas = document.getElementById('barraRecPassivos');
+    if(barraPas) barraPas.style.width = `${pctPas}%`;
+    
+    const barraDet = document.getElementById('barraRecDetratores');
+    if(barraDet) barraDet.style.width = `${pctDet}%`;
 
-    document.getElementById('slideRecPromotores').textContent = `${formatarNumeroMilhares(metricas.totalPromotores)} (${pctPro.toFixed(1)}%)`;
-    document.getElementById('slideRecPassivos').textContent = `${formatarNumeroMilhares(metricas.totalPassivos)} (${pctPas.toFixed(1)}%)`;
-    document.getElementById('slideRecDetratores').textContent = `${formatarNumeroMilhares(metricas.totalDetratores)} (${pctDet.toFixed(1)}%)`;
-}
-
-export function atualizarSlideComFiltro() {
-    const mesSelecionado = document.getElementById('monthFilter').value;
-    let metricasPeriodo = !mesSelecionado ? state.totaisGlobais : state.resumoPorMes[mesSelecionado];
-
-    // Agora recebemos o pacote completo das viagens no tempo
-    const dados3M = calcularNPSRetroativo(mesSelecionado, 3);
-    const dados12M = calcularNPSRetroativo(mesSelecionado, 12);
-
-    const metr = mesSelecionado ? {
-        totalRespostas: (metricasPeriodo.promotores + metricasPeriodo.passivos + metricasPeriodo.detratores) || 0,
-        npsGeral: metricasPeriodo.nps,
-        percentualPromotores: metricasPeriodo.percentualPromotores,
-        percentualPassivos: metricasPeriodo.percentualPassivos,
-        percentualDetratores: metricasPeriodo.percentualDetratores,
-        totalPromotores: metricasPeriodo.promotores,
-        totalPassivos: metricasPeriodo.passivos,
-        totalDetratores: metricasPeriodo.detratores
-    } : metricasPeriodo;
-
-    atualizarSlideExportacao(metr, dados3M, dados12M);
+    const slideRecPro = document.getElementById('slideRecPromotores');
+    if(slideRecPro) slideRecPro.textContent = `${formatarNumeroMilhares(metricas.totalPromotores)} (${pctPro.toFixed(1)}%)`;
+    
+    const slideRecPas = document.getElementById('slideRecPassivos');
+    if(slideRecPas) slideRecPas.textContent = `${formatarNumeroMilhares(metricas.totalPassivos)} (${pctPas.toFixed(1)}%)`;
+    
+    const slideRecDet = document.getElementById('slideRecDetratores');
+    if(slideRecDet) slideRecDet.textContent = `${formatarNumeroMilhares(metricas.totalDetratores)} (${pctDet.toFixed(1)}%)`;
 }
 
 // 
@@ -199,6 +262,7 @@ export async function exportarSlide(event) {
     }
 
 }
+
 
 
 
