@@ -178,6 +178,13 @@
                         </svg>
                         Sugestões
                     </button>
+                    <button class="tab-button" role="tab" aria-selected="false" aria-controls="contentCidades" onclick="mudarAba('cidades')" id="tabCidades">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Por Cidade
+                    </button>
                     <button class="tab-button" role="tab" aria-selected="false" aria-controls="contentExportar" onclick="mudarAba('exportar')" id="tabExportar">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -289,6 +296,35 @@
                     <p class="text-sm text-gray-500 mb-6">Filtro aplicado para comentários contendo mais de 10 palavras.</p>
                     <div id="sugestoesContainer" class="space-y-3"></div>
                 </article>
+            </section>
+
+            <!-- ABA 6: Desempenho por Cidade -->
+            <section id="contentCidades" class="tab-content" role="tabpanel" aria-labelledby="tabCidades">
+                
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Desempenho por Município</h2>
+                    <p class="text-sm text-gray-500">Comparativo de NPS, volume de avaliações e perfil de respondentes entre as unidades.</p>
+                </div>
+            
+                <!-- Gráfico Comparativo -->
+                <article class="chart-container border border-gray-100 mb-8">
+                    <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#00A8B0]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        Ranking de NPS por Cidade
+                    </h3>
+                    <div class="chart-wrapper" style="height: 320px;">
+                        <canvas id="chartNPSCidades"></canvas>
+                    </div>
+                </article>
+            
+                <!-- Grid de Cards Inteligentes (O JS vai injetar os cards aqui dentro) -->
+                <div id="gridCardsCidades" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Loading dos cards... -->
+                    <div class="text-center col-span-full py-10 text-gray-400 font-medium">Processando dados geográficos...</div>
+                </div>
+            
             </section>
 
             <!-- ABA 5: Exportar -->
@@ -469,4 +505,5 @@
 </body>
 
 </html>
+
 
