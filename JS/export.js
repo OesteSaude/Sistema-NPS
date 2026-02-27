@@ -1,11 +1,9 @@
 import { state } from './state.js';
 import { formatarNumeroMilhares } from './utils.js';
 
-// ==========================================
+// 
 // 🧠 1. MÁQUINAS DO TEMPO E MATEMÁTICA
-// ==========================================
-
-// Calcula meses anteriores IGNORANDO o mês atual (Regra Nova!)
+// 
 export function calcularNPSRetroativo(mesBase, qtdMeses) {
     if (!state.resumoPorMes) return { nps: 0, pro: 0, pas: 0, det: 0, total: 0 };
     
@@ -13,7 +11,6 @@ export function calcularNPSRetroativo(mesBase, qtdMeses) {
     if (mesesDisponiveis.length === 0) return { nps: 0, pro: 0, pas: 0, det: 0, total: 0 };
 
     let startIndex = 0;
-    // PULO DO GATO: Se o cara escolheu um mês, a gente começa a contar a partir do mês ANTERIOR (+1 no array reverso)
     if (mesBase) {
         const idx = mesesDisponiveis.indexOf(mesBase);
         if (idx !== -1) startIndex = idx + 1; 
@@ -34,18 +31,15 @@ export function calcularNPSRetroativo(mesBase, qtdMeses) {
     return { nps, pro, pas, det, total };
 }
 
-// NOVO: Calcula o Acumulado do Ano (YTD) - Janeiro até o Mês Base
 export function calcularNPSYTD(mesBase) {
     if (!state.resumoPorMes) return { nps: 0, pro: 0, pas: 0, det: 0, total: 0 };
     
     const mesesDisponiveis = Object.keys(state.resumoPorMes).sort().reverse();
     if (mesesDisponiveis.length === 0) return { nps: 0, pro: 0, pas: 0, det: 0, total: 0 };
 
-    // Se tiver no global, pega o último mês que existe de referência
     const targetMonth = mesBase || mesesDisponiveis[0];
-    const targetYear = targetMonth.substring(0, 4); // Puxa só o '2026'
+    const targetYear = targetMonth.substring(0, 4);
 
-    // Filtra: Só os meses do MESMO ano e que sejam ANTERIORES ou IGUAIS ao mês escolhido
     const mesesFatia = mesesDisponiveis.filter(m => m.startsWith(targetYear) && m <= targetMonth);
 
     let pro = 0, pas = 0, det = 0, total = 0;
@@ -61,10 +55,10 @@ export function calcularNPSYTD(mesBase) {
     return { nps, pro, pas, det, total };
 }
 
-// ==========================================
+// 
 // 🎛️ 2. GATILHO DO FILTRO
-// ==========================================
-window.atualizarSlideComFiltro = function() {
+// 
+export function atualizarSlideComFiltro() {
     const seletorMes = document.getElementById('monthFilter') || document.getElementById('filtroMes');
     const mesSelecionado = seletorMes ? seletorMes.value : '';
     
@@ -74,12 +68,10 @@ window.atualizarSlideComFiltro = function() {
         metricasPeriodo = state.resumoPorMes[mesSelecionado];
     }
 
-    // Calcula todas as visões temporais
     const dados3M = calcularNPSRetroativo(mesSelecionado, 3);
     const dados12M = calcularNPSRetroativo(mesSelecionado, 12);
     const dadosYTD = calcularNPSYTD(mesSelecionado);
 
-    // Mapeamento Blindado (Passivos x Neutros)
     const pro = metricasPeriodo.totalPromotores !== undefined ? metricasPeriodo.totalPromotores : (metricasPeriodo.promotores || 0);
     const pas = metricasPeriodo.totalPassivos !== undefined ? metricasPeriodo.totalPassivos : 
                (metricasPeriodo.totalNeutros !== undefined ? metricasPeriodo.totalNeutros : 
@@ -107,27 +99,24 @@ window.atualizarSlideComFiltro = function() {
         totalDetratores: det
     };
 
-    // Arruma o texto de qual período está sendo lido
     const labelPeriodo = document.getElementById('slidePeriodo');
     if(labelPeriodo) labelPeriodo.textContent = mesSelecionado ? mesSelecionado : 'Todos os dados';
 
     atualizarSlideExportacao(metr, dados3M, dados12M, dadosYTD);
     
-    // Atualiza o gráfico de linhas caso a aba "Comparativo" esteja ativa
-    if (document.getElementById('cenaComparativo').style.display !== 'none') {
-        window.renderizarGraficoComparativo();
+    if (document.getElementById('cenaComparativo') && document.getElementById('cenaComparativo').style.display !== 'none') {
+        renderizarGraficoComparativo();
     }
 }
 
-// ==========================================
+// 
 // 🎨 3. DESENHA O SLIDE GERAL
-// ==========================================
+// 
 export function atualizarSlideExportacao(metricas, dados3M, dados12M, dadosYTD) {
     if (!dados3M) dados3M = calcularNPSRetroativo(null, 3);
     if (!dados12M) dados12M = calcularNPSRetroativo(null, 12);
     if (!dadosYTD) dadosYTD = calcularNPSYTD(null);
 
-    // Regras de cor implacáveis
     function obterCoresEZona(score) {
         if (score >= 76) return { cor: '#10b981', zona: 'Zona de Excelência' }; 
         if (score >= 51) return { cor: '#3b82f6', zona: 'Zona de Qualidade' };  
@@ -141,20 +130,17 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M, dadosYTD) 
 
     const npsAtual = obterCoresEZona(metricas.npsGeral);
     
-    // Calcula a cor da pizza pra cada momento
     const corPizzaAtual = obterCorDaPizza(metricas.npsGeral);
     const corPizzaYTD = obterCorDaPizza(dadosYTD.nps);
     const corPizza3M = obterCorDaPizza(dados3M.nps);
     const corPizza12M = obterCorDaPizza(dados12M.nps);
 
-    // 1. Atualizar KPIs Base do Slide
     const slideTotal = document.getElementById('slideTotal');
     if(slideTotal) slideTotal.textContent = formatarNumeroMilhares(metricas.totalRespostas);
     
     const slideProm = document.getElementById('slidePromotores');
     if(slideProm) slideProm.textContent = metricas.percentualPromotores.toFixed(1) + '%';
     
-    // Container Mestre do NPS
     const containerNPS = document.getElementById('kpiNpsContainer');
     if (containerNPS) {
         containerNPS.style.background = npsAtual.cor;
@@ -197,7 +183,6 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M, dadosYTD) 
         }
     }
 
-    // 2. Textos do Meio das Pizzas
     const mapTextosCentrais = [
         { id: 'slideNPSValue', val: metricas.npsGeral, cor: corPizzaAtual },
         { id: 'slideNPSValueYTD', val: dadosYTD.nps, cor: corPizzaYTD },
@@ -210,13 +195,11 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M, dadosYTD) 
         if(el) { el.textContent = item.val; el.style.color = item.cor; }
     });
 
-    // 3. Desenhar as 4 Pizzas de Evolução
     gerarDoughnutNPS('slideChartNPS', 'exportNpsAtual', metricas.npsGeral, corPizzaAtual); 
     gerarDoughnutNPS('slideChartNPSYTD', 'exportNpsYTD', dadosYTD.nps, corPizzaYTD); 
     gerarDoughnutNPS('slideChartNPS3M', 'exportNps3M', dados3M.nps, corPizza3M);              
     gerarDoughnutNPS('slideChartNPS12M', 'exportNps12M', dados12M.nps, corPizza12M);           
 
-    // 4. Preencher as Mini Legendas Mágicas embaixo das Pizzas
     function popularMiniLegenda(prefixo, dados) {
         const pctPro = dados.total > 0 ? (dados.pro / dados.total) * 100 : 0;
         const pctPas = dados.total > 0 ? (dados.pas / dados.total) * 100 : 0;
@@ -233,16 +216,15 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M, dadosYTD) 
         if(elTot) elTot.textContent = formatarNumeroMilhares(dados.total);
     }
 
-    // Passa os dados processados pras legendas
     popularMiniLegenda('Atual', { pro: metricas.totalPromotores, pas: metricas.totalPassivos, det: metricas.totalDetratores, total: metricas.totalRespostas });
     popularMiniLegenda('YTD', dadosYTD);
     popularMiniLegenda('3M', dados3M);
     popularMiniLegenda('12M', dados12M);
 }
 
-// ==========================================
-// 🍕 4. FÁBRICA DE PIZZAS (Chart.js)
-// ==========================================
+// 
+// 🍕 4. FÁBRICA DE PIZZAS E LINHAS
+// 
 function gerarDoughnutNPS(canvasId, instanceKey, npsScore, corPrincipal) {
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
@@ -269,19 +251,13 @@ function gerarDoughnutNPS(canvasId, instanceKey, npsScore, corPrincipal) {
         options: { 
             responsive: true, 
             maintainAspectRatio: false, 
-            plugins: { 
-                legend: { display: false },
-                tooltip: { enabled: false }
-            },
-            animation: { duration: 0 } // Desativa animação para print perfeito do PNG
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            animation: { duration: 0 } 
         }
     });
 }
 
-// ==========================================
-// 📈 5. GRÁFICO COMPARATIVO ANUAL (Linhas)
-// ==========================================
-window.renderizarGraficoComparativo = function() {
+export function renderizarGraficoComparativo() {
     const ctx = document.getElementById('chartComparativoLinhas');
     if (!ctx) return;
 
@@ -297,9 +273,8 @@ window.renderizarGraficoComparativo = function() {
     const labelsMeses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
     const dataCurrentYear = [];
     const dataPrevYear = [];
-    const dataMeta = Array(12).fill(84); // Linha reta da meta
+    const dataMeta = Array(12).fill(84);
 
-    // Varre de 1 a 12 (Jan a Dez) e extrai o NPS. Se não existir o mês no banco, joga null (linha quebra lindamente)
     for(let i = 1; i <= 12; i++) {
         const mesStr = i.toString().padStart(2, '0');
         
@@ -331,9 +306,9 @@ window.renderizarGraficoComparativo = function() {
                 {
                     label: `Meta (84+)`,
                     data: dataMeta,
-                    borderColor: '#10b981', // Verde
+                    borderColor: '#10b981', 
                     borderWidth: 2,
-                    borderDash: [5, 5], // Linha pontilhada estilosa
+                    borderDash: [5, 5], 
                     pointRadius: 0,
                     fill: false,
                     tension: 0
@@ -341,19 +316,19 @@ window.renderizarGraficoComparativo = function() {
                 {
                     label: `NPS ${currentYear}`,
                     data: dataCurrentYear,
-                    borderColor: '#003D58', // Azul Marinho
+                    borderColor: '#003D58',
                     backgroundColor: '#003D58',
                     borderWidth: 3,
                     pointRadius: 5,
                     pointHoverRadius: 7,
                     fill: false,
                     tension: 0.3,
-                    spanGaps: true // Conecta a linha mesmo se faltar mês no meio
+                    spanGaps: true 
                 },
                 {
                     label: `NPS ${prevYear}`,
                     data: dataPrevYear,
-                    borderColor: '#00A8B0', // Turquesa
+                    borderColor: '#00A8B0',
                     backgroundColor: '#00A8B0',
                     borderWidth: 2,
                     pointRadius: 4,
@@ -367,64 +342,53 @@ window.renderizarGraficoComparativo = function() {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'top' },
-                tooltip: { enabled: true }
-            },
-            scales: {
-                y: {
-                    min: -100,
-                    max: 100,
-                    ticks: { stepSize: 25 }
-                }
-            },
-            animation: { duration: 0 } // Desativa animação para print não sair em branco
+            plugins: { legend: { position: 'top' }, tooltip: { enabled: true } },
+            scales: { y: { min: -100, max: 100, ticks: { stepSize: 25 } } },
+            animation: { duration: 0 } 
         }
     });
 }
 
-// ==========================================
-// 🎭 6. SISTEMA DE CENAS (Alterna o Palco)
-// ==========================================
-window.mudarCenaExport = function(cenaAlvo) {
-    // Esconde tudo
-    document.getElementById('cenaGeral').style.display = 'none';
-    document.getElementById('cenaComparativo').style.display = 'none';
+// 
+// 🎭 5. SISTEMA DE CENAS
+// 
+export function mudarCenaExport(cenaAlvo) {
+    if(document.getElementById('cenaGeral')) document.getElementById('cenaGeral').style.display = 'none';
+    if(document.getElementById('cenaComparativo')) document.getElementById('cenaComparativo').style.display = 'none';
     
-    // Reseta visual dos botões
     const btnGeral = document.getElementById('btnCenaGeral');
     const btnComp = document.getElementById('btnCenaComparativo');
     
-    btnGeral.className = "px-4 py-2 text-sm font-bold rounded-md text-gray-500 hover:text-[#003D58] transition-all";
-    btnComp.className = "px-4 py-2 text-sm font-bold rounded-md text-gray-500 hover:text-[#003D58] transition-all";
+    if(btnGeral) btnGeral.className = "px-4 py-2 text-sm font-bold rounded-md text-gray-500 hover:text-[#003D58] transition-all";
+    if(btnComp) btnComp.className = "px-4 py-2 text-sm font-bold rounded-md text-gray-500 hover:text-[#003D58] transition-all";
     
-    // Mostra o escolhido e ativa o botão
     if(cenaAlvo === 'geral') {
-        document.getElementById('cenaGeral').style.display = 'block';
-        btnGeral.className = "px-4 py-2 text-sm font-bold rounded-md bg-white shadow-sm text-[#003D58] transition-all";
+        if(document.getElementById('cenaGeral')) document.getElementById('cenaGeral').style.display = 'block';
+        if(btnGeral) btnGeral.className = "px-4 py-2 text-sm font-bold rounded-md bg-white shadow-sm text-[#003D58] transition-all";
     } else {
-        document.getElementById('cenaComparativo').style.display = 'block';
-        btnComp.className = "px-4 py-2 text-sm font-bold rounded-md bg-white shadow-sm text-[#003D58] transition-all";
-        // Renderiza o gráfico mágico
-        window.renderizarGraficoComparativo();
+        if(document.getElementById('cenaComparativo')) document.getElementById('cenaComparativo').style.display = 'block';
+        if(btnComp) btnComp.className = "px-4 py-2 text-sm font-bold rounded-md bg-white shadow-sm text-[#003D58] transition-all";
+        renderizarGraficoComparativo();
     }
 }
 
-// ==========================================
-// 📸 7. TIRA A FOTO DO SLIDE 
-// ==========================================
-window.exportarSlide = async function(event) {
+// 
+// 📸 6. EXPORTAR 
+// 
+export async function exportarSlide(event) {
     const elemento = document.getElementById('slideExportacao');
-    const botao = event.target.closest('.export-button');
+    if (!elemento) return;
+    
+    const botao = event.currentTarget;
     const textoOriginal = botao.innerHTML;
 
-    botao.innerHTML = 'Gerando...';
+    botao.innerHTML = 'Gerando... 📸';
     botao.disabled = true;
 
     try {
         const estiloOriginal = elemento.style.cssText;
         elemento.style.height = 'auto';
-        elemento.style.minHeight = '720px';
+        elemento.style.minHeight = '600px';
         
         await new Promise(resolve => setTimeout(resolve, 500));
         const canvas = await html2canvas(elemento, { scale: 2, useCORS: true, backgroundColor: '#ffffff', allowTaint: true });
@@ -433,15 +397,21 @@ window.exportarSlide = async function(event) {
         const link = document.createElement('a');
         link.href = canvas.toDataURL('image/png');
         
-        // Pega qual aba tá ativa pra mudar o nome do arquivo
-        const tipoExport = document.getElementById('cenaGeral').style.display === 'block' ? 'Geral' : 'Comparativo';
-        link.download = `NPS-${tipoExport}-Diretoria-${new Date().toISOString().split('T')[0]}.png`;
+        const isGeral = document.getElementById('cenaGeral') && document.getElementById('cenaGeral').style.display === 'block';
+        const tipoExport = isGeral ? 'VisaoGeral' : 'Comparativo';
+        link.download = `NPS-${tipoExport}-${new Date().toISOString().split('T')[0]}.png`;
         link.click();
     } catch (error) {
         console.error('Erro ao exportar:', error);
-        alert('Erro ao gerar a imagem.');
+        alert('Erro ao gerar a imagem. Tente novamente.');
     } finally {
         botao.innerHTML = textoOriginal;
         botao.disabled = false;
     }
 }
+
+// 🔥 A MÁGICA DE CONEXÃO COM O HTML (O QUE ESTAVA FALTANDO!) 🔥
+window.atualizarSlideComFiltro = atualizarSlideComFiltro;
+window.exportarSlide = exportarSlide;
+window.mudarCenaExport = mudarCenaExport;
+window.renderizarGraficoComparativo = renderizarGraficoComparativo;
