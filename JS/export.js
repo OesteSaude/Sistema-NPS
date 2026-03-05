@@ -397,9 +397,7 @@ export function mudarCenaExport(cenaAlvo) {
     }
 }
 
-// 
-// 📸 6. EXPORTAR 
-// 
+// 📸 6. EXPORTAR (O NOVO MOTOR: HTML -> SVG -> PNG RETINA)
 export async function exportarSlide(event) {
     const elemento = document.getElementById('slideExportacao');
     if (!elemento) return;
@@ -407,38 +405,62 @@ export async function exportarSlide(event) {
     const botao = event.currentTarget;
     const textoOriginal = botao.innerHTML;
 
-    botao.innerHTML = 'Gerando... 📸';
+    botao.innerHTML = 'Gerando Alta Resolução... 🚀';
     botao.disabled = true;
 
     try {
+        // Garantir que a tela esteja visível e estabilizada
         const estiloOriginal = elemento.style.cssText;
         elemento.style.height = 'auto';
         elemento.style.minHeight = '600px';
         
+        // Dá um respiro pro DOM renderizar o Chart.js cravado
         await new Promise(resolve => setTimeout(resolve, 500));
-        const canvas = await html2canvas(elemento, { scale: 2, useCORS: true, backgroundColor: '#ffffff', allowTaint: true });
+
+        // Aqui tá a mágica. O htmlToImage usa SVG (foreignObject) por debaixo dos panos.
+        // O pixelRatio: 3 multiplica a resolução. Fica nível vetor.
+        const dataUrl = await window.htmlToImage.toPng(elemento, {
+            quality: 1.0,
+            pixelRatio: 3, // Resolução Retina 3x (MUITO nítido)
+            backgroundColor: '#ffffff',
+            style: {
+                transform: 'scale(1)',
+                transformOrigin: 'top left'
+            }
+        });
+
+        // Devolve o estilo original da tela
         elemento.style.cssText = estiloOriginal;
 
+        // Faz o download do arquivo
         const link = document.createElement('a');
-        link.href = canvas.toDataURL('image/png');
+        link.href = dataUrl;
         
         const isGeral = document.getElementById('cenaGeral') && document.getElementById('cenaGeral').style.display === 'block';
         const tipoExport = isGeral ? 'VisaoGeral' : 'Comparativo';
         link.download = `NPS-${tipoExport}-${new Date().toISOString().split('T')[0]}.png`;
+        
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
+
     } catch (error) {
-        console.error('Erro ao exportar:', error);
-        alert('Erro ao gerar a imagem. Tente novamente.');
+        console.error('Erro crítico no render do html-to-image:', error);
+        alert('Erro ao gerar a imagem em alta resolução. Verifique o console.');
     } finally {
         botao.innerHTML = textoOriginal;
         botao.disabled = false;
     }
 }
 
+// Atualiza o bind no escopo global (MANTENHA ISSO NO FINAL DO ARQUIVO)
+window.exportarSlide = exportarSlide;
+
 // 🔥 A MÁGICA DE CONEXÃO COM O HTML (O QUE ESTAVA FALTANDO!) 🔥
 window.atualizarSlideComFiltro = atualizarSlideComFiltro;
 window.exportarSlide = exportarSlide;
 window.mudarCenaExport = mudarCenaExport;
 window.renderizarGraficoComparativo = renderizarGraficoComparativo;
+
 
 
