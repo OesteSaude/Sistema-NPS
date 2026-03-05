@@ -392,32 +392,38 @@
         <img src="https://email-editor-production.s3.amazonaws.com/images/49316/favicon_images/isologo_azulturquesa_oestesaude-8da44d-32-icon.png" alt="Oeste Saúde" style="height: 45px;">
     </header>
 
-    <!-- KPIS FIXOS (Aumentei o peso da fonte e o contraste) -->
-    <div class="slide-kpis" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px;">
-        <div class="slide-kpi" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: center;">
-            <div class="slide-kpi-label" style="font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase;">Total de Respostas</div>
-            <div class="slide-kpi-value" id="slideTotal" style="font-size: 32px; font-weight: 900; color: #003D58; margin-top: 5px;">0</div>
-        </div>
-        
-        <div id="kpiNpsContainer" style="background: #10b981; border-radius: 12px; padding: 20px; text-align: center; color: white;">
-            <div id="labelNPS" style="font-size: 13px; font-weight: 700; text-transform: uppercase; opacity: 0.9;">NPS Score</div>
-            <div id="slideNPS" style="font-size: 42px; font-weight: 900; line-height: 1; margin: 5px 0;">0</div>
-            <div id="slideNPSZona" style="font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: 20px; background: rgba(255,255,255,0.25); text-transform: uppercase; display: inline-block; margin-bottom: 5px;">Calculando...</div>
-            <div id="statusMetaInterna" style="font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 4px;">
-                <span id="iconeMeta">🎯</span> <span id="textoMeta">Meta: 84</span>
-            </div>
-        </div>
-        
-        <div class="slide-kpi" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: center;">
-            <div class="slide-kpi-label" style="font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase;">Promotores</div>
-            <div class="slide-kpi-value" id="slidePromotores" style="font-size: 32px; font-weight: 900; color: #10b981; margin-top: 5px;">0%</div>
-        </div>
-        
-        <div class="slide-kpi" style="background: #003D58; border-radius: 12px; padding: 20px; text-align: center; color: white;">
-            <div class="slide-kpi-label" style="font-size: 13px; font-weight: 700; text-transform: uppercase; opacity: 0.9;">Período Analisado</div>
-            <div class="slide-kpi-value" id="slidePeriodo" style="font-size: 20px; font-weight: 800; margin-top: 15px;">Todos os dados</div>
-        </div>
+    <!-- KPIS FIXOS BLINDADOS -->
+<div class="slide-kpis" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; align-items: stretch;">
+    
+    <!-- Total -->
+    <div class="slide-kpi" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <div style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Total Base</div>
+        <div id="slideTotal" style="font-size: 32px; font-weight: 900; color: #003D58; margin-top: 4px; line-height: 1;">0</div>
     </div>
+    
+    <!-- NPS Mestre -->
+    <div id="kpiNpsContainer" style="background: #10b981; border-radius: 12px; padding: 20px; text-align: center; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; overflow: hidden;">
+        <div id="labelNPS" style="font-size: 12px; font-weight: 700; text-transform: uppercase; opacity: 0.9; letter-spacing: 0.5px; position: relative; z-index: 2;">NPS Score</div>
+        <div id="slideNPS" style="font-size: 42px; font-weight: 900; line-height: 1; margin: 4px 0; position: relative; z-index: 2;">0</div>
+        <div id="slideNPSZona" style="font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 20px; background: rgba(255,255,255,0.25); text-transform: uppercase; margin-bottom: 4px; position: relative; z-index: 2;">Calculando...</div>
+        <div id="statusMetaInterna" style="font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px; position: relative; z-index: 2;">
+            <span id="iconeMeta">🎯</span> <span id="textoMeta">Meta: 84</span>
+        </div>
+        <div style="position: absolute; top: -50px; right: -50px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%; filter: blur(20px); z-index: 1;"></div>
+    </div>
+    
+    <!-- Promotores -->
+    <div class="slide-kpi" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <div style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Promotores</div>
+        <div id="slidePromotores" style="font-size: 32px; font-weight: 900; color: #10b981; margin-top: 4px; line-height: 1;">0%</div>
+    </div>
+    
+    <!-- Período -->
+    <div class="slide-kpi" style="background: #003D58; border-radius: 12px; padding: 20px; text-align: center; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; opacity: 0.8; letter-spacing: 0.5px;">Período Analisado</div>
+        <div id="slidePeriodo" style="font-size: 16px; font-weight: 800; margin-top: 8px; line-height: 1.2;">Todos os dados</div>
+    </div>
+</div>
 
     <!-- CENA 1: VISÃO GERAL (O GRID DAS 4 PIZZAS) -->
     <div id="cenaGeral" class="slide-content" style="display: block;">
@@ -529,6 +535,7 @@
 </body>
 
 </html>
+
 
 
 
