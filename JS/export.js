@@ -255,7 +255,7 @@ function gerarDoughnutNPS(canvasId, instanceKey, npsScore, corPrincipal) {
     });
 }
 
-// 📈 5. GRÁFICO COMPARATIVO ANUAL (Deixamos a leitura bruta!)
+// 📈 5. GRÁFICO COMPARATIVO ANUAL (O Novo Padrão Ouro: Barra + Linha)
 export function renderizarGraficoComparativo() {
     const ctx = document.getElementById('chartComparativoLinhas');
     if (!ctx) return;
@@ -296,51 +296,50 @@ export function renderizarGraficoComparativo() {
     if (!state.chartsInstances) state.chartsInstances = {};
 
     state.chartsInstances['comparativoLinhas'] = new window.Chart(ctx, {
-        type: 'line',
         data: {
             labels: labelsMeses,
             datasets: [
                 {
+                    // A LINHA DA META (Fica no topo, cortando tudo)
+                    type: 'line',
                     label: `Meta (84+)`,
                     data: dataMeta,
                     borderColor: '#10b981', 
                     borderWidth: 2,
-                    borderDash: [5, 5], 
+                    borderDash: [6, 6], 
                     pointRadius: 0,
                     fill: false,
                     tension: 0,
-                    order: 3
-                },
-                {
-                    label: `NPS ${currentYear} (Atual)`,
-                    data: dataCurrentYear,
-                    borderColor: '#003D58',
-                    backgroundColor: 'rgba(0, 61, 88, 0.08)', // Fundo sombreado pra "ancorar" o gráfico
-                    borderWidth: 4, // Linha mais grossa
-                    pointRadius: 6, // Pontos maiores pra facilitar leitura de longe
-                    pointBackgroundColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointHoverRadius: 8,
-                    fill: true, // Liga o preenchimento!
-                    tension: 0.3,
-                    spanGaps: true,
                     order: 1
                 },
                 {
-                    label: `NPS ${prevYear}`,
-                    data: dataPrevYear,
-                    borderColor: '#00A8B0',
-                    backgroundColor: '#00A8B0',
-                    borderWidth: 2,
-                    borderDash: [2, 2], // Deixa o ano anterior levemente tracejado pra não competir com o atual
-                    pointRadius: 4,
+                    // ANO ATUAL: Linha imponente Azul Marinho
+                    type: 'line',
+                    label: `NPS ${currentYear} (Atual)`,
+                    data: dataCurrentYear,
+                    borderColor: '#003D58',
+                    borderWidth: 4,
+                    pointRadius: 6, 
                     pointBackgroundColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointHoverRadius: 6,
-                    fill: false,
+                    pointBorderColor: '#003D58',
+                    pointBorderWidth: 3,
+                    pointHoverRadius: 8,
+                    fill: false, 
                     tension: 0.3,
                     spanGaps: true,
                     order: 2
+                },
+                {
+                    // ANO ANTERIOR: Barras Turquesa rebaixadas (O Pulo do Gato visual)
+                    type: 'bar',
+                    label: `NPS ${prevYear} (Anterior)`,
+                    data: dataPrevYear,
+                    backgroundColor: 'rgba(0, 164, 153, 0.4)', // Turquesa com 40% de opacidade
+                    borderColor: 'transparent', // Sem borda
+                    borderWidth: 0,
+                    borderRadius: 4, // Bordinha arredondada na barra pra ficar chique
+                    barPercentage: 0.6, // Deixa a barra mais magrinha e elegante
+                    order: 3
                 }
             ]
         },
@@ -351,10 +350,9 @@ export function renderizarGraficoComparativo() {
                 legend: { 
                     position: 'top',
                     labels: {
-                        font: { size: 14, weight: 'bold', family: "'Montserrat', sans-serif" },
+                        font: { size: 13, weight: 'bold', family: "'Montserrat', sans-serif" },
                         padding: 20,
-                        usePointStyle: true,
-                        pointStyle: 'circle'
+                        usePointStyle: true
                     }
                 }, 
                 tooltip: { enabled: true } 
@@ -363,12 +361,12 @@ export function renderizarGraficoComparativo() {
                 y: { 
                     min: -100, 
                     max: 100, 
-                    ticks: { stepSize: 25, font: { size: 12, weight: 'bold' } },
+                    ticks: { stepSize: 25, font: { size: 11, weight: '600' } },
                     grid: { color: '#f1f5f9' }
                 },
                 x: {
                     ticks: { font: { size: 12, weight: 'bold' }, color: '#475569' },
-                    grid: { display: false }
+                    grid: { display: false } // Tira a grade vertical pra não sujar a barra
                 }
             },
             animation: { duration: 0 } 
@@ -442,4 +440,5 @@ window.atualizarSlideComFiltro = atualizarSlideComFiltro;
 window.exportarSlide = exportarSlide;
 window.mudarCenaExport = mudarCenaExport;
 window.renderizarGraficoComparativo = renderizarGraficoComparativo;
+
 
