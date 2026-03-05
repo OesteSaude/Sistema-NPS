@@ -222,9 +222,7 @@ export function atualizarSlideExportacao(metricas, dados3M, dados12M, dadosYTD) 
     popularMiniLegenda('12M', dados12M);
 }
 
-// 
-// 🍕 4. FÁBRICA DE PIZZAS E LINHAS
-// 
+// 🍕 4. FÁBRICA DE PIZZAS (Engordamos a massa pra dar leitura!)
 function gerarDoughnutNPS(canvasId, instanceKey, npsScore, corPrincipal) {
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
@@ -245,7 +243,7 @@ function gerarDoughnutNPS(canvasId, instanceKey, npsScore, corPrincipal) {
                 data: [npsNormalizado, 100 - npsNormalizado], 
                 backgroundColor: [corPrincipal, '#e2e8f0'], 
                 borderWidth: 0,
-                cutout: '82%'
+                cutout: '72%' // ANTES: 82%. AGORA: 72% (Borda mais grossa, visual weight muito melhor)
             }] 
         },
         options: { 
@@ -257,6 +255,7 @@ function gerarDoughnutNPS(canvasId, instanceKey, npsScore, corPrincipal) {
     });
 }
 
+// 📈 5. GRÁFICO COMPARATIVO ANUAL (Deixamos a leitura bruta!)
 export function renderizarGraficoComparativo() {
     const ctx = document.getElementById('chartComparativoLinhas');
     if (!ctx) return;
@@ -277,14 +276,12 @@ export function renderizarGraficoComparativo() {
 
     for(let i = 1; i <= 12; i++) {
         const mesStr = i.toString().padStart(2, '0');
-        
         const keyCurrent = `${currentYear}-${mesStr}`;
         if(state.resumoPorMes && state.resumoPorMes[keyCurrent]) {
             dataCurrentYear.push(state.resumoPorMes[keyCurrent].nps);
         } else {
             dataCurrentYear.push(null);
         }
-
         const keyPrev = `${prevYear}-${mesStr}`;
         if(state.resumoPorMes && state.resumoPorMes[keyPrev]) {
             dataPrevYear.push(state.resumoPorMes[keyPrev].nps);
@@ -311,19 +308,23 @@ export function renderizarGraficoComparativo() {
                     borderDash: [5, 5], 
                     pointRadius: 0,
                     fill: false,
-                    tension: 0
+                    tension: 0,
+                    order: 3
                 },
                 {
-                    label: `NPS ${currentYear}`,
+                    label: `NPS ${currentYear} (Atual)`,
                     data: dataCurrentYear,
                     borderColor: '#003D58',
-                    backgroundColor: '#003D58',
-                    borderWidth: 3,
-                    pointRadius: 5,
-                    pointHoverRadius: 7,
-                    fill: false,
+                    backgroundColor: 'rgba(0, 61, 88, 0.08)', // Fundo sombreado pra "ancorar" o gráfico
+                    borderWidth: 4, // Linha mais grossa
+                    pointRadius: 6, // Pontos maiores pra facilitar leitura de longe
+                    pointBackgroundColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointHoverRadius: 8,
+                    fill: true, // Liga o preenchimento!
                     tension: 0.3,
-                    spanGaps: true 
+                    spanGaps: true,
+                    order: 1
                 },
                 {
                     label: `NPS ${prevYear}`,
@@ -331,19 +332,45 @@ export function renderizarGraficoComparativo() {
                     borderColor: '#00A8B0',
                     backgroundColor: '#00A8B0',
                     borderWidth: 2,
+                    borderDash: [2, 2], // Deixa o ano anterior levemente tracejado pra não competir com o atual
                     pointRadius: 4,
+                    pointBackgroundColor: '#fff',
+                    pointBorderWidth: 2,
                     pointHoverRadius: 6,
                     fill: false,
                     tension: 0.3,
-                    spanGaps: true
+                    spanGaps: true,
+                    order: 2
                 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { position: 'top' }, tooltip: { enabled: true } },
-            scales: { y: { min: -100, max: 100, ticks: { stepSize: 25 } } },
+            plugins: { 
+                legend: { 
+                    position: 'top',
+                    labels: {
+                        font: { size: 14, weight: 'bold', family: "'Montserrat', sans-serif" },
+                        padding: 20,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                }, 
+                tooltip: { enabled: true } 
+            },
+            scales: { 
+                y: { 
+                    min: -100, 
+                    max: 100, 
+                    ticks: { stepSize: 25, font: { size: 12, weight: 'bold' } },
+                    grid: { color: '#f1f5f9' }
+                },
+                x: {
+                    ticks: { font: { size: 12, weight: 'bold' }, color: '#475569' },
+                    grid: { display: false }
+                }
+            },
             animation: { duration: 0 } 
         }
     });
@@ -415,3 +442,4 @@ window.atualizarSlideComFiltro = atualizarSlideComFiltro;
 window.exportarSlide = exportarSlide;
 window.mudarCenaExport = mudarCenaExport;
 window.renderizarGraficoComparativo = renderizarGraficoComparativo;
+
