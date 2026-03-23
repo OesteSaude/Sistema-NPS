@@ -495,57 +495,87 @@ async function injetarFontesInline() {
 }
 
 export async function exportarSlide(event) {
-    const elemento = document.getElementById('slideExportacao');
-    if (!elemento) return;
-
     const botao         = event.currentTarget;
     const textoOriginal = botao.innerHTML;
-    botao.innerHTML     = 'Gerando Alta Resolução... 🚀';
+    botao.innerHTML     = 'Gerando... 🚀';
     botao.disabled      = true;
 
-    // Guarda e remove todos os <link> de fontes externas antes da captura
-    const linksExternos = [...document.querySelectorAll('link[rel="stylesheet"]')].filter(l =>
-        l.href.includes('fonts.googleapis.com') || l.href.includes('fonts.gstatic.com')
-    );
-    linksExternos.forEach(l => l.remove());
-
     try {
-        const estiloOriginal     = elemento.style.cssText;
-        elemento.style.height    = 'auto';
-        elemento.style.minHeight = '600px';
+        const slide   = document.getElementById('slideExportacao');
+        const escala  = 3;
+        const largura = slide.offsetWidth;
+        const altura  = slide.offsetHeight;
 
-        await injetarFontesInline();
-        await new Promise(resolve => setTimeout(resolve, 500));
+        const canvas  = document.createElement('canvas');
+        canvas.width  = largura * escala;
+        canvas.height = altura  * escala;
 
-        const dataUrl = await window.htmlToImage.toPng(elemento, {
-            quality:         1.0,
-            pixelRatio:      3,
-            backgroundColor: '#ffffff',
-            style: {
-                transform:       'scale(1)',
-                transformOrigin: 'top left',
-            },
+        const ctx = canvas.getContext('2d');
+        ctx.scale(escala, escala);
+
+        // 1. Fundo branco
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, largura, altura);
+
+        // 2. Renderiza o slide como imagem via foreignObject (só o layout, sem fetch externo)
+        const svgData = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="${largura}" height="${altura}">
+                <foreignObject width="100%" height="100%">
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                        ${slide.outerHTML}
+                    </div>
+                </foreignObject>
+            </svg>`;
+
+        await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => { ctx.drawImage(img, 0, 0, largura, altura); resolve(); };
+            img.onerror = reject;
+            img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgData);
         });
 
-        elemento.style.cssText = estiloOriginal;
+        // 3. Copia os canvas do Chart.js por cima (resolve o problema dos gráficos em branco)
+        const canvasIds = [
+            'slideChartNPS', 'slideChartNPSYTD',
+            'slideChartNPS3M', 'slideChartNPS12M',
+            'chartComparativoLinhas'
+        ];
 
+        canvasIds.forEach(id => {
+            const c = document.getElementById(id);
+            if (!c || c.closest('#cenaGeral,#cenaComparativo')?.style.display === 'none') return;
+
+            const rect       = c.getBoundingClientRect();
+            const slideRect  = slide.getBoundingClientRect();
+            const x = rect.left - slideRect.left;
+            const y = rect.top  - slideRect.top;
+
+            ctx.drawImage(c, x, y, rect.width, rect.height);
+        });
+
+        // 4. Copia o logo por cima (resolve o problema da imagem externa)
+        const logoEl = document.getElementById('logoSlide');
+        if (logoEl) {
+            const rect      = logoEl.getBoundingClientRect();
+            const slideRect = slide.getBoundingClientRect();
+            const x = rect.left - slideRect.left;
+            const y = rect.top  - slideRect.top;
+            ctx.drawImage(logoEl, x, y, rect.width, rect.height);
+        }
+
+        // 5. Download
         const link    = document.createElement('a');
-        link.href     = dataUrl;
         const isGeral = document.getElementById('cenaGeral')?.style.display === 'block';
-        const tipo    = isGeral ? 'VisaoGeral' : 'Comparativo';
-        link.download = `NPS-${tipo}-${new Date().toISOString().split('T')[0]}.png`;
-
+        link.download = `NPS-${isGeral ? 'VisaoGeral' : 'Comparativo'}-${new Date().toISOString().split('T')[0]}.png`;
+        link.href     = canvas.toDataURL('image/png', 1.0);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
 
     } catch (error) {
-        console.error('Erro crítico no render do html-to-image:', error);
-        alert('Erro ao gerar a imagem em alta resolução. Verifique o console.');
+        console.error('Erro no export:', error);
+        alert('Erro ao gerar a imagem. Verifique o console.');
     } finally {
-        // Restaura os <link> removidos
-        linksExternos.forEach(l => document.head.appendChild(l));
-
         botao.innerHTML = textoOriginal;
         botao.disabled  = false;
     }
