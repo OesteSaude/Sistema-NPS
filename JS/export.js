@@ -573,12 +573,11 @@ export async function exportarSlide(event) {
         document.body.removeChild(link);
 
     } catch (error) {
-    console.error('Erro no export — tipo:', error?.name);
-    console.error('Erro no export — mensagem:', error?.message);
-    console.error('Erro no export — stack:', error?.stack);
-    console.error('Erro no export — objeto completo:', error);
-    alert(`Erro: ${error?.name} — ${error?.message}`);
-}
+        console.error('Erro no export — tipo:', error?.name);
+        console.error('Erro no export — mensagem:', error?.message);
+        console.error('Erro no export — stack:', error?.stack);
+        console.error('Erro no export — objeto completo:', error);
+        alert(`Erro: ${error?.name} — ${error?.message}`);
     } finally {
         botao.innerHTML = textoOriginal;
         botao.disabled  = false;
