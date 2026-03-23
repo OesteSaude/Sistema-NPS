@@ -504,24 +504,20 @@ export async function exportarSlide(event) {
     botao.disabled      = true;
 
     try {
-        const estiloOriginal     = elemento.style.cssText;
-        elemento.style.height    = 'auto';
-        elemento.style.minHeight = '600px';
+        await new Promise(resolve => setTimeout(resolve, 300));
 
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        const dataUrl = await window.htmlToImage.toPng(elemento, {
-            quality:    1.0,
-            pixelRatio: 4, // ← era 3, sobe pra 4 ou 5 para mais qualidade
+        const canvas = await window.html2canvas(elemento, {
+            scale:           4,        // qualidade 4x
+            useCORS:         true,     // tenta CORS mas não quebra se falhar
+            allowTaint:      true,     // permite imagens sem CORS sem travar
             backgroundColor: '#ffffff',
+            logging:         false,
         });
 
-        elemento.style.cssText = estiloOriginal;
-
         const link    = document.createElement('a');
-        link.href     = dataUrl;
         const isGeral = document.getElementById('cenaGeral')?.style.display === 'block';
         link.download = `NPS-${isGeral ? 'VisaoGeral' : 'Comparativo'}-${new Date().toISOString().split('T')[0]}.png`;
+        link.href     = canvas.toDataURL('image/png', 1.0);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
