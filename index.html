@@ -4,23 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard NPS - Operadora Oeste Saúde</title>
+
+    <!-- Favicons -->
     <link rel="icon" sizes="16x16" href="https://email-editor-production.s3.amazonaws.com/images/49316/favicon_images/isologo_azulturquesa_oestesaude-8da44d-16-icon.png">
     <link rel="icon" sizes="32x32" href="https://email-editor-production.s3.amazonaws.com/images/49316/favicon_images/isologo_azulturquesa_oestesaude-8da44d-32-icon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="https://email-editor-production.s3.amazonaws.com/images/49316/favicon_images/isologo_azulturquesa_oestesaude-8da44d-apple-touch-icon.png">
 
-    <!-- Otimização de Performance: Preconnect para as fontes do Google -->
+    <!--
+        FONTES: Duas opções abaixo.
+        - OPÇÃO A (recomendada): fonte local — sem CORS, sem dependência externa.
+          Baixe os arquivos .woff2 em https://gwfh.mranftl.com/fonts/sora
+          e coloque em /fonts/ no projeto. Então USE o bloco OPÇÃO A e REMOVA o OPÇÃO B.
+        - OPÇÃO B (fallback): Google Fonts — funciona direto, mas causa erro no export.
+          Se ainda não baixou as fontes locais, mantenha só esta opção.
+    -->
+
+    <!-- OPÇÃO A: Fontes locais (recomendado para export funcionar) -->
+    <!--
+    <style>
+        @font-face { font-family: 'Sora'; src: url('/fonts/sora-400.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+        @font-face { font-family: 'Sora'; src: url('/fonts/sora-500.woff2') format('woff2'); font-weight: 500; font-display: swap; }
+        @font-face { font-family: 'Sora'; src: url('/fonts/sora-600.woff2') format('woff2'); font-weight: 600; font-display: swap; }
+        @font-face { font-family: 'Sora'; src: url('/fonts/sora-700.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+        @font-face { font-family: 'Sora'; src: url('/fonts/sora-800.woff2') format('woff2'); font-weight: 800; font-display: swap; }
+    </style>
+    -->
+
+    <!-- OPÇÃO B: Google Fonts (use até ter os arquivos locais) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <style>
-      @font-face { font-family: 'Sora'; src: url('/fonts/sora-400.woff2') format('woff2'); font-weight: 400; }
-      @font-face { font-family: 'Sora'; src: url('/fonts/sora-600.woff2') format('woff2'); font-weight: 600; }
-      @font-face { font-family: 'Sora'; src: url('/fonts/sora-700.woff2') format('woff2'); font-weight: 700; }
-      @font-face { font-family: 'Sora'; src: url('/fonts/sora-800.woff2') format('woff2'); font-weight: 800; }
-    </style>
-    
-    <!-- Nosso CSS Modularizado -->
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js — SEM defer para garantir que esteja disponível antes dos módulos JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+    <!-- CSS do projeto -->
     <link rel="stylesheet" href="CSS/style.css">
 </head>
 <body class="bg-slate-50 min-h-screen">
@@ -54,44 +75,46 @@
 
     <!-- Aplicação Principal -->
     <div id="dashboard" class="hidden">
-        
-        <!-- Header Semântico -->
-        <header class="bg-white shadow-md sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between flex-wrap gap-4">
-        
-        <!-- Logo e Título -->
-        <div class="flex items-center gap-4">
-            <img src="https://i.imgur.com/l4tIG6t.png" alt="Logo Oeste Saúde" class="logo-oeste">
-            <div class="border-l-2 border-gray-300 pl-4">
-                <h1 class="text-xl font-bold text-gray-800 leading-tight">Dashboard NPS</h1>
-                <p id="headerSubtitle" class="text-xs text-gray-600 font-medium uppercase tracking-wide">Operadora Oeste Saúde</p>
-            </div>
-        </div>
 
-        <!-- SWITCHER DE UNIDADES (HTML LIMPO) -->
-        <div style="text-align: center;"> <!-- Centraliza a pílula na tela -->
-            <div class="switcher-container">
-                <!-- O botão da Operadora já nasce com a classe 'active' -->
-                <button id="btnOp" onclick="trocarDashboard('operadora')" class="switcher-btn active">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                    Operadora
-                </button>
-                
-                <!-- O botão do Centro Médico nasce apagado (sem o 'active') -->
-                <button id="btnCm" onclick="trocarDashboard('centro')" class="switcher-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
-                    Centro Médico
-                </button>
+        <!-- Header -->
+        <header class="bg-white shadow-md sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between flex-wrap gap-4">
+
+                <!-- Logo e Título -->
+                <div class="flex items-center gap-4">
+                    <img src="https://i.imgur.com/l4tIG6t.png" alt="Logo Oeste Saúde" class="logo-oeste">
+                    <div class="border-l-2 border-gray-300 pl-4">
+                        <h1 class="text-xl font-bold text-gray-800 leading-tight">Dashboard NPS</h1>
+                        <p id="headerSubtitle" class="text-xs text-gray-600 font-medium uppercase tracking-wide">Operadora Oeste Saúde</p>
+                    </div>
+                </div>
+
+                <!-- Switcher de Unidades -->
+                <div style="text-align: center;">
+                    <div class="switcher-container">
+                        <button id="btnOp" onclick="trocarDashboard('operadora')" class="switcher-btn active">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            Operadora
+                        </button>
+                        <button id="btnCm" onclick="trocarDashboard('centro')" class="switcher-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                            Centro Médico
+                        </button>
+                    </div>
+                </div>
             </div>
-        </div>
-</header>
+        </header>
 
         <!-- Main Content -->
         <main class="max-w-7xl mx-auto px-6 py-6">
-            
-            <!-- Secão de KPIs -->
+
+            <!-- KPIs -->
             <section aria-label="Indicadores Principais" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <!-- KPI: Total Respostas -->
+
                 <article class="kpi-card blue">
                     <div class="flex items-center justify-between mb-3">
                         <div>
@@ -107,7 +130,6 @@
                     <p class="text-xs text-gray-500">Avaliações coletadas</p>
                 </article>
 
-                <!-- KPI: NPS Score -->
                 <article class="kpi-card green">
                     <div class="flex items-center justify-between mb-3">
                         <div>
@@ -123,7 +145,6 @@
                     <p class="text-xs text-gray-500">De -100 a +100</p>
                 </article>
 
-                <!-- KPI: Promotores -->
                 <article class="kpi-card yellow">
                     <div class="flex items-center justify-between mb-3">
                         <div>
@@ -139,7 +160,6 @@
                     <p class="text-xs text-gray-500">Notas 9 e 10</p>
                 </article>
 
-                <!-- KPI: Zona Atual -->
                 <article class="kpi-card red">
                     <div class="flex items-center justify-between mb-3">
                         <div>
@@ -154,9 +174,10 @@
                     </div>
                     <p class="text-xs text-gray-500" id="kpiZonaDesc">-</p>
                 </article>
+
             </section>
 
-            <!-- Sistema de Abas (Nav Semântica) -->
+            <!-- Navegação por Abas -->
             <nav class="bg-white rounded-lg shadow-sm mb-6 overflow-hidden border border-gray-100" aria-label="Navegação do Dashboard">
                 <div class="flex overflow-x-auto scrollbar-hide" role="tablist">
                     <button class="tab-button active" role="tab" aria-selected="true" aria-controls="contentAvaliacoes" onclick="mudarAba('avaliacoes')" id="tabAvaliacoes">
@@ -199,8 +220,6 @@
                 </div>
             </nav>
 
-            <!-- Conteúdo das Abas -->
-
             <!-- ABA 1: Avaliações Gerais -->
             <section id="contentAvaliacoes" class="tab-content active" role="tabpanel" aria-labelledby="tabAvaliacoes">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -215,7 +234,6 @@
                             <canvas id="chartNotaGeral" aria-label="Gráfico de distribuição de notas"></canvas>
                         </div>
                     </article>
-
                     <article class="chart-container border border-gray-100">
                         <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#003D58]" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -246,7 +264,6 @@
                             </div>
                         </div>
                     </article>
-
                     <article class="chart-container border border-gray-100">
                         <h3 class="text-base font-bold text-gray-800 mb-4">Coleta Digital</h3>
                         <div class="flex items-center justify-between">
@@ -261,7 +278,6 @@
                         </div>
                     </article>
                 </div>
-
                 <article class="chart-container border border-gray-100">
                     <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#003D58]" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -303,15 +319,12 @@
                 </article>
             </section>
 
-            <!-- ABA 6: Desempenho por Cidade -->
+            <!-- ABA 5: Por Cidade -->
             <section id="contentCidades" class="tab-content" role="tabpanel" aria-labelledby="tabCidades">
-                
                 <div class="mb-6">
                     <h2 class="text-xl font-bold text-gray-800">Desempenho por Município</h2>
                     <p class="text-sm text-gray-500">Comparativo de NPS, volume de avaliações e perfil de respondentes entre as unidades.</p>
                 </div>
-            
-                <!-- Gráfico Comparativo -->
                 <article class="chart-container border border-gray-100 mb-8">
                     <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#00A8B0]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -323,233 +336,217 @@
                         <canvas id="chartNPSCidades"></canvas>
                     </div>
                 </article>
-            
-                <!-- Aqui começa a Box que segura os Cards -->
                 <article class="chart-container border border-gray-100">
                     <h3 class="text-base font-bold text-gray-800 mb-4">Detalhamento por Unidade</h3>
-                    
-                    <!-- Grid de Cards Inteligentes -->
                     <div id="gridCardsCidades" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <!-- Loading dos cards... -->
                         <div class="col-span-full py-10 text-center text-gray-400 font-medium">Processando dados geográficos...</div>
                     </div>
                 </article>
-            
             </section>
 
-          <!-- ABA 5: Exportar -->
-<section id="contentExportar" class="tab-content" role="tabpanel" aria-labelledby="tabExportar">
-    <article class="chart-container border border-gray-100">
-        <div class="export-controls border-b border-gray-100 pb-6 mb-6">
-            <div class="mb-4 md:mb-0">
-                <h3 class="text-base font-bold text-gray-800 flex items-center gap-2 mb-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#003D58]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    Slide de Diretoria
-                </h3>
-                <p class="text-sm text-gray-500">Gere um slide em PNG formato 16:9 pronto para a apresentação.</p>
-            </div>
-        </div>
+            <!-- ABA 6: Exportar Relatório -->
+            <section id="contentExportar" class="tab-content" role="tabpanel" aria-labelledby="tabExportar">
+                <article class="chart-container border border-gray-100">
 
-        <!-- BARRA DE CONTROLES: Filtro, Seletor de Visão e Botão de Exportar -->
-        <div class="flex items-center justify-between gap-4 mb-8 flex-wrap bg-slate-50 p-4 rounded-lg border border-gray-100">
-            
-            <div class="flex items-center gap-6">
-                <div class="filter-group">
-                    <label for="monthFilter" class="filter-label">Filtrar Período:</label>
-                    <select id="monthFilter" class="month-filter focus:ring-2 focus:ring-[#00A8B0] outline-none" onchange="atualizarSlideComFiltro()">
-                        <option value="">Todos os dados</option>
-                    </select>
-                </div>
+                    <div class="export-controls border-b border-gray-100 pb-6 mb-6">
+                        <h3 class="text-base font-bold text-gray-800 flex items-center gap-2 mb-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-[#003D58]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Slide de Diretoria
+                        </h3>
+                        <p class="text-sm text-gray-500">Gere um slide em PNG formato 16:9 pronto para a apresentação.</p>
+                    </div>
 
-                <!-- SELETOR DE CENA (O Palco) -->
-                <div class="flex bg-gray-200 p-1 rounded-lg">
-                    <button onclick="mudarCenaExport('geral')" id="btnCenaGeral" class="px-4 py-2 text-sm font-bold rounded-md bg-white shadow-sm text-[#003D58] transition-all">
-                        📊 Visão Geral (Pizzas)
-                    </button>
-                    <button onclick="mudarCenaExport('comparativo')" id="btnCenaComparativo" class="px-4 py-2 text-sm font-bold rounded-md text-gray-500 hover:text-[#003D58] transition-all">
-                        📈 Comparativo Anual
-                    </button>
-                </div>
-            </div>
-
-            <button class="export-button" onclick="exportarSlide(event)" style="background: #003D58; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; display: flex; align-items: center; gap: 8px;">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                Baixar PNG
-            </button>
-        </div>
-
-        <!-- SLIDE DE EXPORTAÇÃO (O Canvas que vai virar PNG) -->
-<div id="slideExportacao" class="slide-container relative" style="background: white; padding: 40px; border-radius: 12px; max-width: 1100px; margin: 0 auto;">
-    
-    <!-- HEADER -->
-    <header class="slide-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px; margin-bottom: 30px;">
-        <div>
-            <h1 style="margin: 0; color: #003D58; font-size: 28px; font-weight: 900;">Apresentação NPS</h1>
-            <p style="color: #64748b; font-size: 14px; margin-top: 5px;">Operadora Oeste Saúde - Dados Net Promoter Score</p>
-        </div>
-        <img id="logoSlide" crossorigin="anonymous"
-     src="https://email-editor-production.s3.amazonaws.com/.../isologo...32-icon.png"
-     alt="Oeste Saúde" style="height: 45px;">
-    </header>
-
-    <!-- KPIS FIXOS BLINDADOS -->
-<div class="slide-kpis" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; align-items: stretch;">
-    
-    <!-- Total -->
-    <div class="slide-kpi" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-        <div style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Total Base</div>
-        <div id="slideTotal" style="font-size: 32px; font-weight: 900; color: #003D58; margin-top: 4px; line-height: 1;">0</div>
-    </div>
-    
-    <!-- NPS Mestre -->
-    <div id="kpiNpsContainer" style="background: #10b981; border-radius: 12px; padding: 20px; text-align: center; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; overflow: hidden;">
-        <div id="labelNPS" style="font-size: 12px; font-weight: 700; text-transform: uppercase; opacity: 0.9; letter-spacing: 0.5px; position: relative; z-index: 2;">NPS Score</div>
-        <div id="slideNPS" style="font-size: 42px; font-weight: 900; line-height: 1; margin: 4px 0; position: relative; z-index: 2;">0</div>
-        <div id="slideNPSZona" style="font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 20px; background: rgba(255,255,255,0.25); text-transform: uppercase; margin-bottom: 4px; position: relative; z-index: 2;">Calculando...</div>
-        <div id="statusMetaInterna" style="font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px; position: relative; z-index: 2;">
-            <span id="iconeMeta">🎯</span> <span id="textoMeta">Meta: 84</span>
-        </div>
-        <div style="position: absolute; top: -50px; right: -50px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%; filter: blur(20px); z-index: 1;"></div>
-    </div>
-    
-    <!-- Promotores -->
-    <div class="slide-kpi" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-        <div style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Promotores</div>
-        <div id="slidePromotores" style="font-size: 32px; font-weight: 900; color: #10b981; margin-top: 4px; line-height: 1;">0%</div>
-    </div>
-    
-    <!-- Período -->
-    <div class="slide-kpi" style="background: #003D58; border-radius: 12px; padding: 20px; text-align: center; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; opacity: 0.8; letter-spacing: 0.5px;">Período Analisado</div>
-        <div id="slidePeriodo" style="font-size: 16px; font-weight: 800; margin-top: 8px; line-height: 1.2;">Todos os dados</div>
-    </div>
-</div>
-
-    <!-- CENA 1: VISÃO GERAL (O GRID DAS 4 PIZZAS) -->
-    <div id="cenaGeral" class="slide-content" style="display: block;">
-        <div style="background: #f8fafc; border-radius: 12px; padding: 30px; border: 1px solid #e2e8f0;">
-            <h4 style="font-size: 18px; font-weight: 800; color: #003D58; margin-bottom: 25px; text-align: center;">Raio-X do Net Promoter Score</h4>
-        
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
-                
-                <!-- 1. Mês Atual -->
-                <div class="slide-chart-section" style="background: white; padding: 20px 15px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-                    <div style="text-align: center; font-size: 13px; font-weight: 800; color: #003D58; margin-bottom: 15px; text-transform: uppercase;">Mês Base</div>
-                    
-                    <!-- AQUI TÁ A CORREÇÃO DO BUG DO HTML2CANVAS (Flexbox Absoluto) -->
-                    <div style="width: 140px; height: 140px; margin: 0 auto; position: relative;">
-                        <canvas id="slideChartNPS" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;"></canvas>
-                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2; padding-top: 4px;">
-                            <span style="font-size: 11px; color: #64748b; font-weight: 800; margin-bottom: -2px;">NPS</span>
-                            <span id="slideNPSValue" style="font-size: 34px; font-weight: 900; color: #003D58; line-height: 1;">0</span>
+                    <!-- Controles -->
+                    <div class="flex items-center justify-between gap-4 mb-8 flex-wrap bg-slate-50 p-4 rounded-lg border border-gray-100">
+                        <div class="flex items-center gap-6">
+                            <div class="filter-group">
+                                <label for="monthFilter" class="filter-label">Filtrar Período:</label>
+                                <select id="monthFilter" class="month-filter focus:ring-2 focus:ring-[#00A8B0] outline-none" onchange="atualizarSlideComFiltro()">
+                                    <option value="">Todos os dados</option>
+                                </select>
+                            </div>
+                            <div class="flex bg-gray-200 p-1 rounded-lg">
+                                <button onclick="mudarCenaExport('geral')" id="btnCenaGeral" class="px-4 py-2 text-sm font-bold rounded-md bg-white shadow-sm text-[#003D58] transition-all">
+                                    📊 Visão Geral (Pizzas)
+                                </button>
+                                <button onclick="mudarCenaExport('comparativo')" id="btnCenaComparativo" class="px-4 py-2 text-sm font-bold rounded-md text-gray-500 hover:text-[#003D58] transition-all">
+                                    📈 Comparativo Anual
+                                </button>
+                            </div>
                         </div>
+                        <button onclick="exportarSlide(event)" style="background: #003D58; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; display: flex; align-items: center; gap: 8px; cursor: pointer; border: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Baixar PNG
+                        </button>
                     </div>
-                    
-                    <!-- Legenda com fonte maior e mais legível -->
-                    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;"><span style="color: #10b981;">● PRO:</span> <span id="legendaAtualPro">0 (0%)</span></div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;"><span style="color: #f59e0b;">● NEU:</span> <span id="legendaAtualNeu">0 (0%)</span></div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 10px;"><span style="color: #ef4444;">● DET:</span> <span id="legendaAtualDet">0 (0%)</span></div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 900; color: #003D58; background: #f8fafc; padding: 4px 8px; border-radius: 4px;"><span>TOTAL:</span> <span id="legendaAtualTotal">0</span></div>
-                    </div>
-                </div>
 
-                <!-- 2. Acumulado do Ano (YTD) -->
-                <div class="slide-chart-section" style="background: white; padding: 20px 15px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-                    <div style="text-align: center; font-size: 13px; font-weight: 800; color: #003D58; margin-bottom: 15px; text-transform: uppercase;">Acumulado Ano</div>
-                    <div style="width: 140px; height: 140px; margin: 0 auto; position: relative;">
-                        <canvas id="slideChartNPSYTD" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;"></canvas>
-                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2; padding-top: 4px;">
-                            <span style="font-size: 11px; color: #64748b; font-weight: 800; margin-bottom: -2px;">NPS</span>
-                            <span id="slideNPSValueYTD" style="font-size: 34px; font-weight: 900; color: #003D58; line-height: 1;">0</span>
-                        </div>
-                    </div>
-                    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;"><span style="color: #10b981;">● PRO:</span> <span id="legendaYTDPro">0 (0%)</span></div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;"><span style="color: #f59e0b;">● NEU:</span> <span id="legendaYTDNeu">0 (0%)</span></div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 10px;"><span style="color: #ef4444;">● DET:</span> <span id="legendaYTDDet">0 (0%)</span></div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 900; color: #003D58; background: #f8fafc; padding: 4px 8px; border-radius: 4px;"><span>TOTAL:</span> <span id="legendaYTDTotal">0</span></div>
-                    </div>
-                </div>
-        
-                <!-- 3. Últimos 3 Meses -->
-                <div class="slide-chart-section" style="background: white; padding: 20px 15px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-                    <div style="text-align: center; font-size: 13px; font-weight: 800; color: #003D58; margin-bottom: 15px; text-transform: uppercase;">Últimos 3 Meses</div>
-                    <div style="width: 140px; height: 140px; margin: 0 auto; position: relative;">
-                        <canvas id="slideChartNPS3M" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;"></canvas>
-                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2; padding-top: 4px;">
-                            <span style="font-size: 11px; color: #64748b; font-weight: 800; margin-bottom: -2px;">NPS</span>
-                            <span id="slideNPSValue3M" style="font-size: 34px; font-weight: 900; color: #003D58; line-height: 1;">0</span>
-                        </div>
-                    </div>
-                    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;"><span style="color: #10b981;">● PRO:</span> <span id="legenda3MPro">0 (0%)</span></div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;"><span style="color: #f59e0b;">● NEU:</span> <span id="legenda3MPas">0 (0%)</span></div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 10px;"><span style="color: #ef4444;">● DET:</span> <span id="legenda3MDet">0 (0%)</span></div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 900; color: #003D58; background: #f8fafc; padding: 4px 8px; border-radius: 4px;"><span>TOTAL:</span> <span id="legenda3MTotal">0</span></div>
-                    </div>
-                </div>
-        
-                <!-- 4. Últimos 12 Meses -->
-                <div class="slide-chart-section" style="background: white; padding: 20px 15px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-                    <div style="text-align: center; font-size: 13px; font-weight: 800; color: #003D58; margin-bottom: 15px; text-transform: uppercase;">Últimos 12 Meses</div>
-                    <div style="width: 140px; height: 140px; margin: 0 auto; position: relative;">
-                        <canvas id="slideChartNPS12M" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;"></canvas>
-                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2; padding-top: 4px;">
-                            <span style="font-size: 11px; color: #64748b; font-weight: 800; margin-bottom: -2px;">NPS</span>
-                            <span id="slideNPSValue12M" style="font-size: 34px; font-weight: 900; color: #003D58; line-height: 1;">0</span>
-                        </div>
-                    </div>
-                    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;"><span style="color: #10b981;">● PRO:</span> <span id="legenda12MPro">0 (0%)</span></div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;"><span style="color: #f59e0b;">● NEU:</span> <span id="legenda12MPas">0 (0%)</span></div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 10px;"><span style="color: #ef4444;">● DET:</span> <span id="legenda12MDet">0 (0%)</span></div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 900; color: #003D58; background: #f8fafc; padding: 4px 8px; border-radius: 4px;"><span>TOTAL:</span> <span id="legenda12MTotal">0</span></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+                    <!-- Slide de Exportação -->
+                    <div id="slideExportacao" class="slide-container relative" style="background: white; padding: 40px; border-radius: 12px; max-width: 1100px; margin: 0 auto;">
 
-    <!-- CENA 2: VISÃO COMPARATIVA (LINHAS YoY) -->
-    <div id="cenaComparativo" class="slide-content" style="display: none;">
-        <div style="background: #f8fafc; border-radius: 12px; padding: 30px; border: 1px solid #e2e8f0;">
-            <h4 style="font-size: 18px; font-weight: 800; color: #003D58; margin-bottom: 25px; text-align: center;">Comparativo Anual de Desempenho vs. Meta</h4>
-            <div style="width: 100%; height: 320px; position: relative;">
-                <canvas id="chartComparativoLinhas"></canvas>
-            </div>
-        </div>
-    </div>
+                        <!-- Header do Slide -->
+                        <header class="slide-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px; margin-bottom: 30px;">
+                            <div>
+                                <h1 style="margin: 0; color: #003D58; font-size: 28px; font-weight: 900;">Apresentação NPS</h1>
+                                <p style="color: #64748b; font-size: 14px; margin-top: 5px;">Operadora Oeste Saúde - Dados Net Promoter Score</p>
+                            </div>
+                            <!--
+                                Logo do slide: mantém crossorigin="anonymous" para o canvas conseguir desenhar a imagem.
+                                O S3 da AWS precisa ter CORS configurado no bucket para isso funcionar.
+                                Se não quiser configurar o S3, substitua por uma imagem hospedada localmente.
+                            -->
+                            <img
+                                id="logoSlide"
+                                crossorigin="anonymous"
+                                src="https://email-editor-production.s3.amazonaws.com/images/49316/favicon_images/isologo_azulturquesa_oestesaude-8da44d-32-icon.png"
+                                alt="Oeste Saúde"
+                                style="height: 45px;"
+                            >
+                        </header>
 
-    <!-- RODAPÉ DE ZONAS -->
-    <footer class="slide-zones" style="margin-top: 30px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center;">
-        <div style="background: #fee2e2; color: #ef4444; padding: 10px; border-radius: 8px; font-size: 12px;"><strong style="display:block;">Zona Crítica</strong>-100 a 0</div>
-        <div style="background: #fef3c7; color: #f59e0b; padding: 10px; border-radius: 8px; font-size: 12px;"><strong style="display:block;">Aperfeiçoamento</strong>1 a 50</div>
-        <div style="background: #dbeafe; color: #3b82f6; padding: 10px; border-radius: 8px; font-size: 12px;"><strong style="display:block;">Qualidade</strong>51 a 75</div>
-        <div style="background: #d1fae5; color: #10b981; padding: 10px; border-radius: 8px; font-size: 12px;"><strong style="display:block;">Excelência</strong>76 a 100</div>
-    </footer>
-</div>
-    </article>
-</section>
+                        <!-- KPIs do Slide -->
+                        <div class="slide-kpis" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; align-items: stretch;">
+
+                            <div class="slide-kpi" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                                <div style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Total Base</div>
+                                <div id="slideTotal" style="font-size: 32px; font-weight: 900; color: #003D58; margin-top: 4px; line-height: 1;">0</div>
+                            </div>
+
+                            <div id="kpiNpsContainer" style="background: #10b981; border-radius: 12px; padding: 20px; text-align: center; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; overflow: hidden;">
+                                <div id="labelNPS" style="font-size: 12px; font-weight: 700; text-transform: uppercase; opacity: 0.9; letter-spacing: 0.5px; position: relative; z-index: 2;">NPS Score</div>
+                                <div id="slideNPS" style="font-size: 42px; font-weight: 900; line-height: 1; margin: 4px 0; position: relative; z-index: 2;">0</div>
+                                <div id="slideNPSZona" style="font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 20px; background: rgba(255,255,255,0.25); text-transform: uppercase; margin-bottom: 4px; position: relative; z-index: 2;">Calculando...</div>
+                                <div id="statusMetaInterna" style="font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px; position: relative; z-index: 2;">
+                                    <span id="iconeMeta">🎯</span> <span id="textoMeta">Meta: 84</span>
+                                </div>
+                                <div style="position: absolute; top: -50px; right: -50px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%; filter: blur(20px); z-index: 1;"></div>
+                            </div>
+
+                            <div class="slide-kpi" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                                <div style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Promotores</div>
+                                <div id="slidePromotores" style="font-size: 32px; font-weight: 900; color: #10b981; margin-top: 4px; line-height: 1;">0%</div>
+                            </div>
+
+                            <div class="slide-kpi" style="background: #003D58; border-radius: 12px; padding: 20px; text-align: center; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; opacity: 0.8; letter-spacing: 0.5px;">Período Analisado</div>
+                                <div id="slidePeriodo" style="font-size: 16px; font-weight: 800; margin-top: 8px; line-height: 1.2;">Todos os dados</div>
+                            </div>
+
+                        </div>
+
+                        <!-- Cena 1: Visão Geral (4 Pizzas) -->
+                        <div id="cenaGeral" class="slide-content" style="display: block;">
+                            <div style="background: #f8fafc; border-radius: 12px; padding: 30px; border: 1px solid #e2e8f0;">
+                                <h4 style="font-size: 18px; font-weight: 800; color: #003D58; margin-bottom: 25px; text-align: center;">Raio-X do Net Promoter Score</h4>
+                                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+
+                                    <!-- Mês Base -->
+                                    <div class="slide-chart-section" style="background: white; padding: 20px 15px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                                        <div style="text-align: center; font-size: 13px; font-weight: 800; color: #003D58; margin-bottom: 15px; text-transform: uppercase;">Mês Base</div>
+                                        <div style="width: 140px; height: 140px; margin: 0 auto; position: relative;">
+                                            <canvas id="slideChartNPS" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;"></canvas>
+                                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2; padding-top: 4px;">
+                                                <span style="font-size: 11px; color: #64748b; font-weight: 800; margin-bottom: -2px;">NPS</span>
+                                                <span id="slideNPSValue" style="font-size: 34px; font-weight: 900; color: #003D58; line-height: 1;">0</span>
+                                            </div>
+                                        </div>
+                                        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
+                                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;"><span style="color: #10b981;">● PRO:</span> <span id="legendaAtualPro">0 (0%)</span></div>
+                                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;"><span style="color: #f59e0b;">● NEU:</span> <span id="legendaAtualNeu">0 (0%)</span></div>
+                                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 10px;"><span style="color: #ef4444;">● DET:</span> <span id="legendaAtualDet">0 (0%)</span></div>
+                                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 900; color: #003D58; background: #f8fafc; padding: 4px 8px; border-radius: 4px;"><span>TOTAL:</span> <span id="legendaAtualTotal">0</span></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Acumulado Ano (YTD) -->
+                                    <div class="slide-chart-section" style="background: white; padding: 20px 15px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                                        <div style="text-align: center; font-size: 13px; font-weight: 800; color: #003D58; margin-bottom: 15px; text-transform: uppercase;">Acumulado Ano</div>
+                                        <div style="width: 140px; height: 140px; margin: 0 auto; position: relative;">
+                                            <canvas id="slideChartNPSYTD" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;"></canvas>
+                                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2; padding-top: 4px;">
+                                                <span style="font-size: 11px; color: #64748b; font-weight: 800; margin-bottom: -2px;">NPS</span>
+                                                <span id="slideNPSValueYTD" style="font-size: 34px; font-weight: 900; color: #003D58; line-height: 1;">0</span>
+                                            </div>
+                                        </div>
+                                        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
+                                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;"><span style="color: #10b981;">● PRO:</span> <span id="legendaYTDPro">0 (0%)</span></div>
+                                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;"><span style="color: #f59e0b;">● NEU:</span> <span id="legendaYTDNeu">0 (0%)</span></div>
+                                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 10px;"><span style="color: #ef4444;">● DET:</span> <span id="legendaYTDDet">0 (0%)</span></div>
+                                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 900; color: #003D58; background: #f8fafc; padding: 4px 8px; border-radius: 4px;"><span>TOTAL:</span> <span id="legendaYTDTotal">0</span></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Últimos 3 Meses -->
+                                    <div class="slide-chart-section" style="background: white; padding: 20px 15px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                                        <div style="text-align: center; font-size: 13px; font-weight: 800; color: #003D58; margin-bottom: 15px; text-transform: uppercase;">Últimos 3 Meses</div>
+                                        <div style="width: 140px; height: 140px; margin: 0 auto; position: relative;">
+                                            <canvas id="slideChartNPS3M" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;"></canvas>
+                                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2; padding-top: 4px;">
+                                                <span style="font-size: 11px; color: #64748b; font-weight: 800; margin-bottom: -2px;">NPS</span>
+                                                <span id="slideNPSValue3M" style="font-size: 34px; font-weight: 900; color: #003D58; line-height: 1;">0</span>
+                                            </div>
+                                        </div>
+                                        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
+                                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;"><span style="color: #10b981;">● PRO:</span> <span id="legenda3MPro">0 (0%)</span></div>
+                                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;"><span style="color: #f59e0b;">● NEU:</span> <span id="legenda3MPas">0 (0%)</span></div>
+                                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 10px;"><span style="color: #ef4444;">● DET:</span> <span id="legenda3MDet">0 (0%)</span></div>
+                                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 900; color: #003D58; background: #f8fafc; padding: 4px 8px; border-radius: 4px;"><span>TOTAL:</span> <span id="legenda3MTotal">0</span></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Últimos 12 Meses -->
+                                    <div class="slide-chart-section" style="background: white; padding: 20px 15px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                                        <div style="text-align: center; font-size: 13px; font-weight: 800; color: #003D58; margin-bottom: 15px; text-transform: uppercase;">Últimos 12 Meses</div>
+                                        <div style="width: 140px; height: 140px; margin: 0 auto; position: relative;">
+                                            <canvas id="slideChartNPS12M" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;"></canvas>
+                                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2; padding-top: 4px;">
+                                                <span style="font-size: 11px; color: #64748b; font-weight: 800; margin-bottom: -2px;">NPS</span>
+                                                <span id="slideNPSValue12M" style="font-size: 34px; font-weight: 900; color: #003D58; line-height: 1;">0</span>
+                                            </div>
+                                        </div>
+                                        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
+                                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;"><span style="color: #10b981;">● PRO:</span> <span id="legenda12MPro">0 (0%)</span></div>
+                                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;"><span style="color: #f59e0b;">● NEU:</span> <span id="legenda12MPas">0 (0%)</span></div>
+                                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 10px;"><span style="color: #ef4444;">● DET:</span> <span id="legenda12MDet">0 (0%)</span></div>
+                                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 900; color: #003D58; background: #f8fafc; padding: 4px 8px; border-radius: 4px;"><span>TOTAL:</span> <span id="legenda12MTotal">0</span></div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cena 2: Comparativo Anual -->
+                        <div id="cenaComparativo" class="slide-content" style="display: none;">
+                            <div style="background: #f8fafc; border-radius: 12px; padding: 30px; border: 1px solid #e2e8f0;">
+                                <h4 style="font-size: 18px; font-weight: 800; color: #003D58; margin-bottom: 25px; text-align: center;">Comparativo Anual de Desempenho vs. Meta</h4>
+                                <div style="width: 100%; height: 320px; position: relative;">
+                                    <canvas id="chartComparativoLinhas"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rodapé de Zonas -->
+                        <footer class="slide-zones" style="margin-top: 30px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center;">
+                            <div style="background: #fee2e2; color: #ef4444; padding: 10px; border-radius: 8px; font-size: 12px;"><strong style="display: block;">Zona Crítica</strong>-100 a 0</div>
+                            <div style="background: #fef3c7; color: #f59e0b; padding: 10px; border-radius: 8px; font-size: 12px;"><strong style="display: block;">Aperfeiçoamento</strong>1 a 50</div>
+                            <div style="background: #dbeafe; color: #3b82f6; padding: 10px; border-radius: 8px; font-size: 12px;"><strong style="display: block;">Qualidade</strong>51 a 75</div>
+                            <div style="background: #d1fae5; color: #10b981; padding: 10px; border-radius: 8px; font-size: 12px;"><strong style="display: block;">Excelência</strong>76 a 100</div>
+                        </footer>
+
+                    </div><!-- fim #slideExportacao -->
+
+                </article>
+            </section>
+
+        </main>
+    </div><!-- fim #dashboard -->
+
+    <!-- JS principal — type="module" já tem defer implícito -->
     <script type="module" src="JS/app.js"></script>
+
 </body>
-
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
