@@ -495,54 +495,40 @@ async function injetarFontesInline() {
 }
 
 export async function exportarSlide(event) {
-    console.log('🚀 exportarSlide iniciado');
-    const slide   = document.getElementById('slideExportacao');
-    const largura = slide.offsetWidth;
-    const altura  = slide.offsetHeight;
-    console.log('📐 Dimensões do slide:', largura, 'x', altura);
+    const elemento = document.getElementById('slideExportacao');
+    if (!elemento) return;
 
     const botao         = event.currentTarget;
     const textoOriginal = botao.innerHTML;
-    botao.innerHTML     = 'Gerando... 🚀';
+    botao.innerHTML     = 'Gerando Alta Resolução... 🚀';
     botao.disabled      = true;
 
     try {
-        const escala  = 3;
-        const canvas  = document.createElement('canvas');
-        canvas.width  = largura  * escala;
-        canvas.height = altura   * escala;
-        const ctx = canvas.getContext('2d');
-        ctx.scale(escala, escala);
+        const estiloOriginal     = elemento.style.cssText;
+        elemento.style.height    = 'auto';
+        elemento.style.minHeight = '600px';
 
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, largura, altura);
-        console.log('✅ Canvas criado');
+        await new Promise(resolve => setTimeout(resolve, 500));
 
-        // Testa o SVG/foreignObject isolado
-        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="${largura}" height="${altura}">
-            <foreignObject width="100%" height="100%">
-                <div xmlns="http://www.w3.org/1999/xhtml">
-                    ${slide.outerHTML}
-                </div>
-            </foreignObject>
-        </svg>`;
-
-        console.log('📄 SVG montado, tentando carregar imagem...');
-
-        await new Promise((resolve, reject) => {
-            const img = new Image();
-            img.onload  = () => { console.log('✅ SVG carregado no img'); resolve(); };
-            img.onerror = (e) => { console.error('❌ Falhou ao carregar SVG:', e); reject(new Error('SVG falhou: ' + JSON.stringify(e))); };
-            img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgData);
+        const dataUrl = await window.htmlToImage.toPng(elemento, {
+            quality:    1.0,
+            pixelRatio: 4, // ← era 3, sobe pra 4 ou 5 para mais qualidade
+            backgroundColor: '#ffffff',
         });
 
-        ctx.drawImage(document.querySelector('#slideExportacao img'), 0, 0);
-        console.log('✅ drawImage executado');
+        elemento.style.cssText = estiloOriginal;
+
+        const link    = document.createElement('a');
+        link.href     = dataUrl;
+        const isGeral = document.getElementById('cenaGeral')?.style.display === 'block';
+        link.download = `NPS-${isGeral ? 'VisaoGeral' : 'Comparativo'}-${new Date().toISOString().split('T')[0]}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
 
     } catch (error) {
-        console.error('Erro no export — mensagem:', error?.message);
-        console.error('Erro no export — stack:', error?.stack);
-        alert(`Erro: ${error?.message}`);
+        console.error('Erro no export:', error);
+        alert('Erro ao gerar imagem. Verifique o console.');
     } finally {
         botao.innerHTML = textoOriginal;
         botao.disabled  = false;
