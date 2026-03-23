@@ -503,8 +503,14 @@ export async function exportarSlide(event) {
     botao.innerHTML     = 'Gerando Alta Resolução... 🚀';
     botao.disabled      = true;
 
+    // Guarda e remove todos os <link> de fontes externas antes da captura
+    const linksExternos = [...document.querySelectorAll('link[rel="stylesheet"]')].filter(l =>
+        l.href.includes('fonts.googleapis.com') || l.href.includes('fonts.gstatic.com')
+    );
+    linksExternos.forEach(l => l.remove());
+
     try {
-        const estiloOriginal    = elemento.style.cssText;
+        const estiloOriginal     = elemento.style.cssText;
         elemento.style.height    = 'auto';
         elemento.style.minHeight = '600px';
 
@@ -512,11 +518,9 @@ export async function exportarSlide(event) {
         await new Promise(resolve => setTimeout(resolve, 500));
 
         const dataUrl = await window.htmlToImage.toPng(elemento, {
-            quality:          1.0,
-            pixelRatio:       3,
-            backgroundColor:  '#ffffff',
-            skipFonts:        false,
-            fetchRequestInit: { mode: 'cors' },
+            quality:         1.0,
+            pixelRatio:      3,
+            backgroundColor: '#ffffff',
             style: {
                 transform:       'scale(1)',
                 transformOrigin: 'top left',
@@ -525,11 +529,11 @@ export async function exportarSlide(event) {
 
         elemento.style.cssText = estiloOriginal;
 
-        const link     = document.createElement('a');
-        link.href      = dataUrl;
-        const isGeral  = document.getElementById('cenaGeral')?.style.display === 'block';
-        const tipo     = isGeral ? 'VisaoGeral' : 'Comparativo';
-        link.download  = `NPS-${tipo}-${new Date().toISOString().split('T')[0]}.png`;
+        const link    = document.createElement('a');
+        link.href     = dataUrl;
+        const isGeral = document.getElementById('cenaGeral')?.style.display === 'block';
+        const tipo    = isGeral ? 'VisaoGeral' : 'Comparativo';
+        link.download = `NPS-${tipo}-${new Date().toISOString().split('T')[0]}.png`;
 
         document.body.appendChild(link);
         link.click();
@@ -539,6 +543,9 @@ export async function exportarSlide(event) {
         console.error('Erro crítico no render do html-to-image:', error);
         alert('Erro ao gerar a imagem em alta resolução. Verifique o console.');
     } finally {
+        // Restaura os <link> removidos
+        linksExternos.forEach(l => document.head.appendChild(l));
+
         botao.innerHTML = textoOriginal;
         botao.disabled  = false;
     }
