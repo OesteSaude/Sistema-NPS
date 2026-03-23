@@ -495,89 +495,54 @@ async function injetarFontesInline() {
 }
 
 export async function exportarSlide(event) {
+    console.log('🚀 exportarSlide iniciado');
+    const slide   = document.getElementById('slideExportacao');
+    const largura = slide.offsetWidth;
+    const altura  = slide.offsetHeight;
+    console.log('📐 Dimensões do slide:', largura, 'x', altura);
+
     const botao         = event.currentTarget;
     const textoOriginal = botao.innerHTML;
     botao.innerHTML     = 'Gerando... 🚀';
     botao.disabled      = true;
 
     try {
-        const slide   = document.getElementById('slideExportacao');
         const escala  = 3;
-        const largura = slide.offsetWidth;
-        const altura  = slide.offsetHeight;
-
         const canvas  = document.createElement('canvas');
-        canvas.width  = largura * escala;
-        canvas.height = altura  * escala;
-
+        canvas.width  = largura  * escala;
+        canvas.height = altura   * escala;
         const ctx = canvas.getContext('2d');
         ctx.scale(escala, escala);
 
-        // 1. Fundo branco
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, largura, altura);
+        console.log('✅ Canvas criado');
 
-        // 2. Renderiza o slide como imagem via foreignObject (só o layout, sem fetch externo)
-        const svgData = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="${largura}" height="${altura}">
-                <foreignObject width="100%" height="100%">
-                    <div xmlns="http://www.w3.org/1999/xhtml">
-                        ${slide.outerHTML}
-                    </div>
-                </foreignObject>
-            </svg>`;
+        // Testa o SVG/foreignObject isolado
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="${largura}" height="${altura}">
+            <foreignObject width="100%" height="100%">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    ${slide.outerHTML}
+                </div>
+            </foreignObject>
+        </svg>`;
+
+        console.log('📄 SVG montado, tentando carregar imagem...');
 
         await new Promise((resolve, reject) => {
             const img = new Image();
-            img.onload = () => { ctx.drawImage(img, 0, 0, largura, altura); resolve(); };
-            img.onerror = reject;
+            img.onload  = () => { console.log('✅ SVG carregado no img'); resolve(); };
+            img.onerror = (e) => { console.error('❌ Falhou ao carregar SVG:', e); reject(new Error('SVG falhou: ' + JSON.stringify(e))); };
             img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgData);
         });
 
-        // 3. Copia os canvas do Chart.js por cima (resolve o problema dos gráficos em branco)
-        const canvasIds = [
-            'slideChartNPS', 'slideChartNPSYTD',
-            'slideChartNPS3M', 'slideChartNPS12M',
-            'chartComparativoLinhas'
-        ];
-
-        canvasIds.forEach(id => {
-            const c = document.getElementById(id);
-            if (!c || c.closest('#cenaGeral,#cenaComparativo')?.style.display === 'none') return;
-
-            const rect       = c.getBoundingClientRect();
-            const slideRect  = slide.getBoundingClientRect();
-            const x = rect.left - slideRect.left;
-            const y = rect.top  - slideRect.top;
-
-            ctx.drawImage(c, x, y, rect.width, rect.height);
-        });
-
-        // 4. Copia o logo por cima (resolve o problema da imagem externa)
-        const logoEl = document.getElementById('logoSlide');
-        if (logoEl) {
-            const rect      = logoEl.getBoundingClientRect();
-            const slideRect = slide.getBoundingClientRect();
-            const x = rect.left - slideRect.left;
-            const y = rect.top  - slideRect.top;
-            ctx.drawImage(logoEl, x, y, rect.width, rect.height);
-        }
-
-        // 5. Download
-        const link    = document.createElement('a');
-        const isGeral = document.getElementById('cenaGeral')?.style.display === 'block';
-        link.download = `NPS-${isGeral ? 'VisaoGeral' : 'Comparativo'}-${new Date().toISOString().split('T')[0]}.png`;
-        link.href     = canvas.toDataURL('image/png', 1.0);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        ctx.drawImage(document.querySelector('#slideExportacao img'), 0, 0);
+        console.log('✅ drawImage executado');
 
     } catch (error) {
-        console.error('Erro no export — tipo:', error?.name);
         console.error('Erro no export — mensagem:', error?.message);
         console.error('Erro no export — stack:', error?.stack);
-        console.error('Erro no export — objeto completo:', error);
-        alert(`Erro: ${error?.name} — ${error?.message}`);
+        alert(`Erro: ${error?.message}`);
     } finally {
         botao.innerHTML = textoOriginal;
         botao.disabled  = false;
