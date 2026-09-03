@@ -1,0 +1,143 @@
+.obrigado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.obrigado__content {
+  width: 100%;
+}
+
+.obrigado__subtitle {
+  font-size: 16px;
+  color: #2b4e65;
+  margin: 20px 0;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.obrigado__form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.obrigado__input {
+  width: 100%;
+  padding: 14px 18px;
+  border: 1px solid #d0dbe5;
+  border-radius: 8px;
+  font-size: 15px;
+  color: #0f2d44;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease;
+}
+
+.obrigado__input:focus {
+  border-color: #29a9e0;
+  box-shadow: 0 0 0 3px rgba(41, 169, 224, 0.15);
+}
+
+.obrigado__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.obrigado__button--primary {
+  width: 100%;
+  padding: 14px 24px;
+  background-color: #1aa89a;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.obrigado__button--primary:hover {
+  background-color: #158b7f;
+}
+
+/* Botão discreto para o fluxo de escape */
+.obrigado__button-skip {
+  background: none;
+  border: none;
+  color: #6b8296;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 8px;
+  transition: color 0.2s ease;
+}
+
+.obrigado__button-skip:hover {
+  color: #0f2d44;
+}
+
+/* Feedback Visual de Confirmação */
+.obrigado__feedback {
+  margin-top: 24px;
+  padding: 24px;
+  border-radius: 12px;
+  background-color: #f4f8fb;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.obrigado__check-icon {
+  width: 48px;
+  height: 48px;
+  background-color: #1aa89a;
+  color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0 auto 16px auto;
+}
+
+.obrigado__feedback h3 {
+  color: #0f2d44;
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.obrigado__feedback p,
+.obrigado__finished-text {
+  color: #2b4e65;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.obrigado__stars {
+  display: flex;
+  gap: 12px;
+}
+
+.obrigado__star {
+  font-size: 48px;
+  color: #0f2d44;
+}
+
+.obrigado__star--active {
+  color: #29a9e0;
+}
+
+.obrigado__title {
+  font-size: 32px;
+  color: #0f2d44;
+  line-height: 1.4;
+  margin: 0;
+}
