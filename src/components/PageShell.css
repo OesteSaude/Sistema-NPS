@@ -1,6 +1,6 @@
 .page-shell {
   min-height: 100vh;
-  display: fill;
+  display: flex;
   flex-direction: column;
   background: #ffffff;
 }

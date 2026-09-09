@@ -2,6 +2,7 @@ import { useSurvey, SCREEN } from '../context/SurveyContext';
 import './DebugBar.css';
 
 const SCREEN_LABELS = {
+  [SCREEN.UNIDADE]: 'home_page_00 (seleção de unidade)',
   [SCREEN.HOME]: 'home_page_01',
   [SCREEN.NOTA_CATEGORIA]: 'nota (negativa/neutra/positiva)',
   [SCREEN.RESPOSTAS]: 'home_page_pos_respostas',

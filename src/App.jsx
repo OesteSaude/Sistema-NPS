@@ -1,4 +1,5 @@
 import { SurveyProvider, useSurvey, SCREEN } from './context/SurveyContext';
+import UnidadePage from './pages/UnidadePage';
 import HomePage01 from './pages/HomePage01';
 import NotaCategoriaPage from './pages/NotaCategoriaPage';
 import RespostasPage from './pages/RespostasPage';
@@ -7,6 +8,7 @@ import OverlayOutrosCriterios from './components/OverlayOutrosCriterios';
 import DebugBar from './components/DebugBar';
 
 const SCREEN_COMPONENTS = {
+  [SCREEN.UNIDADE]: UnidadePage,
   [SCREEN.HOME]: HomePage01,
   [SCREEN.NOTA_CATEGORIA]: NotaCategoriaPage,
   [SCREEN.RESPOSTAS]: RespostasPage,

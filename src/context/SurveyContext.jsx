@@ -1,6 +1,8 @@
 import { createContext, useContext, useMemo, useState } from 'react';
+import { findUnidadeById } from '../data/unidades';
 
 export const SCREEN = {
+  UNIDADE: 'unidade',
   HOME: 'home',
   NOTA_CATEGORIA: 'nota_categoria',
   RESPOSTAS: 'respostas',
@@ -9,16 +11,30 @@ export const SCREEN = {
 
 const SurveyContext = createContext(null);
 
-const initialState = {
-  screen: SCREEN.HOME,
-  homeScore: null,
-  categoriaComment: '',
-  criteriaRatings: {},
-};
+function resolveUnidadeFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const unidadeId = params.get('unidade');
+  return findUnidadeById(unidadeId);
+}
+
+function buildInitialState() {
+  const unidade = resolveUnidadeFromUrl();
+  return {
+    screen: unidade ? SCREEN.HOME : SCREEN.UNIDADE,
+    unidadeId: unidade?.id ?? null,
+    homeScore: null,
+    categoriaComment: '',
+    criteriaRatings: {},
+  };
+}
 
 export function SurveyProvider({ children }) {
-  const [state, setState] = useState(initialState);
+  const [state, setState] = useState(buildInitialState);
   const [overlayOpen, setOverlayOpen] = useState(false);
+
+  const selectUnidade = (unidadeId) => {
+    setState((prev) => ({ ...prev, unidadeId, screen: SCREEN.HOME }));
+  };
 
   const selectHomeScore = (homeScore) => {
     setState((prev) => ({ ...prev, homeScore, screen: SCREEN.NOTA_CATEGORIA }));
@@ -41,12 +57,13 @@ export function SurveyProvider({ children }) {
     setState((prev) => ({ ...prev, criteriaRatings, screen: SCREEN.OBRIGADO }));
   };
 
-  const reset = () => setState(initialState);
+  const reset = () => setState(buildInitialState());
 
   const value = useMemo(
     () => ({
       ...state,
       overlayOpen,
+      selectUnidade,
       selectHomeScore,
       submitNotaCategoria,
       chooseAvaliarOutrosCriterios,
