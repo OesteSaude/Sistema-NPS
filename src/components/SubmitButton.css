@@ -12,17 +12,13 @@
   cursor: pointer;
 }
 
-.submit-button:disabled {
-  background: #b4b2a9;
-  cursor: not-allowed;
-}
-
 .submit-button__icon {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 32px;
   height: 32px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.25);
-  padding: 8px;
-  box-sizing: border-box;
+  font-size: 18px;
 }

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import PageShell from '../components/PageShell';
 import SurveyHero from '../components/SurveyHero';
 import CriteriaQuestion from '../components/CriteriaQuestion';
-import ProgressBar from '../components/ProgressBar';
 import SubmitButton from '../components/SubmitButton';
 import { useSurvey } from '../context/SurveyContext';
 
@@ -19,38 +18,29 @@ const QUESTIONS = [
 export default function RespostasPage() {
   const { submitRespostas } = useSurvey();
   const [ratings, setRatings] = useState({});
-  const [currentIndex, setCurrentIndex] = useState(0);
 
-  const currentQuestion = QUESTIONS[currentIndex];
-  const isLastQuestion = currentIndex === QUESTIONS.length - 1;
-  const currentScore = ratings[currentQuestion.id] ?? null;
-
-  const handleSelect = (score) => {
-    setRatings((prev) => ({ ...prev, [currentQuestion.id]: score }));
+  const handleSelect = (questionId, score) => {
+    setRatings((prev) => ({ ...prev, [questionId]: score }));
   };
 
-  const handleAdvance = (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
-
-    if (isLastQuestion) {
-      submitRespostas(ratings);
-      return;
-    }
-
-    setCurrentIndex((prev) => prev + 1);
+    submitRespostas(ratings);
   };
 
   return (
     <PageShell>
       <SurveyHero />
-      <ProgressBar current={currentIndex + 1} total={QUESTIONS.length} />
-      <form onSubmit={handleAdvance}>
-        <CriteriaQuestion
-          question={currentQuestion.label}
-          selectedScore={currentScore}
-          onSelect={handleSelect}
-        />
-        <SubmitButton disabled={currentScore === null}>{isLastQuestion ? 'ENVIAR' : 'PRÓXIMO'}</SubmitButton>
+      <form onSubmit={handleSubmit}>
+        {QUESTIONS.map((question) => (
+          <CriteriaQuestion
+            key={question.id}
+            question={question.label}
+            selectedScore={ratings[question.id] ?? null}
+            onSelect={(score) => handleSelect(question.id, score)}
+          />
+        ))}
+        <SubmitButton />
       </form>
     </PageShell>
   );
