@@ -1,5 +1,6 @@
 import { createContext, useContext, useMemo, useState } from 'react';
 import { findUnidadeById } from '../data/unidades';
+import { enviarRespostaPesquisa } from '../lib/surveySubmission';
 
 export const SCREEN = {
   UNIDADE: 'unidade',
@@ -25,6 +26,8 @@ function buildInitialState() {
     homeScore: null,
     categoriaComment: '',
     criteriaRatings: {},
+    submissionStatus: 'idle',
+    submissionError: null,
   };
 }
 
@@ -45,16 +48,40 @@ export function SurveyProvider({ children }) {
     setOverlayOpen(true);
   };
 
-  const chooseAvaliarOutrosCriterios = (wantsMore) => {
-    setOverlayOpen(false);
+  const finalizarPesquisa = async (avaliouOutrosCriterios, criteriaRatings) => {
     setState((prev) => ({
       ...prev,
-      screen: wantsMore ? SCREEN.RESPOSTAS : SCREEN.OBRIGADO,
+      criteriaRatings,
+      screen: SCREEN.OBRIGADO,
+      submissionStatus: 'enviando',
+      submissionError: null,
     }));
+
+    try {
+      await enviarRespostaPesquisa({
+        unidadeId: state.unidadeId,
+        homeScore: state.homeScore,
+        categoriaComment: state.categoriaComment,
+        avaliouOutrosCriterios,
+        criteriaRatings,
+      });
+      setState((prev) => ({ ...prev, submissionStatus: 'sucesso' }));
+    } catch (error) {
+      setState((prev) => ({ ...prev, submissionStatus: 'erro', submissionError: error.message }));
+    }
+  };
+
+  const chooseAvaliarOutrosCriterios = (wantsMore) => {
+    setOverlayOpen(false);
+    if (wantsMore) {
+      setState((prev) => ({ ...prev, screen: SCREEN.RESPOSTAS }));
+      return;
+    }
+    finalizarPesquisa(false, {});
   };
 
   const submitRespostas = (criteriaRatings) => {
-    setState((prev) => ({ ...prev, criteriaRatings, screen: SCREEN.OBRIGADO }));
+    finalizarPesquisa(true, criteriaRatings);
   };
 
   const reset = () => setState(buildInitialState());
