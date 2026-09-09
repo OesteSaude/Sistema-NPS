@@ -5,7 +5,6 @@ import NotaCategoriaPage from './pages/NotaCategoriaPage';
 import RespostasPage from './pages/RespostasPage';
 import ObrigadoPage from './pages/ObrigadoPage';
 import OverlayOutrosCriterios from './components/OverlayOutrosCriterios';
-import DebugBar from './components/DebugBar';
 
 const SCREEN_COMPONENTS = {
   [SCREEN.UNIDADE]: UnidadePage,
@@ -21,7 +20,6 @@ function SurveyFlow() {
 
   return (
     <>
-      <DebugBar />
       <CurrentScreen />
       {overlayOpen && (
         <OverlayOutrosCriterios
