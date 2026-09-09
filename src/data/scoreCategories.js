@@ -6,16 +6,16 @@ export const SCORE_CATEGORY = {
 
 const FEEDBACK_PROMPTS = {
   [SCORE_CATEGORY.NEGATIVA]: {
-    label: 'Sentimos muito por isso.',
-    hint: 'O que houve? Conta pra gente para melhorarmos o seu plano.',
+    label: 'O que motivou a sua nota?',
+    hint: 'Conte para nós como podemos melhorar.',
   },
   [SCORE_CATEGORY.NEUTRA]: {
-    label: 'O que faltou para a nota 10?',
-    hint: 'Deixe sua sugestão para o seu plano ser ainda melhor.',
+    label: 'O que motivou a sua nota?',
+    hint: 'Conte para nós como podemos melhorar.',
   },
   [SCORE_CATEGORY.POSITIVA]: {
-    label: 'Que bom que você curtiu! ;)',
-    hint: 'Conta pra gente como está sendo viver esse novo plano.',
+    label: 'O que motivou a sua nota?',
+    hint: 'Sua experiência conosco foi boa? Como podemos melhorar.',
   },
 };
 
