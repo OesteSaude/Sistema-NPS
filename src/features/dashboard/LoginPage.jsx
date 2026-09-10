@@ -76,7 +76,7 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              placeholder="voce@oestesaude.com.br"
+              placeholder="seunome@oestesaude.com.br"
               required
             />
           </label>

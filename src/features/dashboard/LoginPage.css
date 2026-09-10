@@ -1,5 +1,6 @@
 .login-page {
   max-width: 380px;
+  margin: 0 auto;
 }
 
 .login-page__title {
