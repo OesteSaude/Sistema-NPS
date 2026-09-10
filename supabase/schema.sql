@@ -105,3 +105,4 @@ select
 from historico_mensal hm
 left join historico_mensal_notas hn on hn.mes = hm.mes
 group by hm.mes, hm.total_respostas, hm.coleta_manual, hm.coleta_digital;
+
