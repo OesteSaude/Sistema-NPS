@@ -1,13 +1,13 @@
 export const UNIDADES = [
-  { id: 'presidente-prudente', nome: 'Presidente Prudente' },
-  { id: 'assis', nome: 'Assis' },
-  { id: 'marilia', nome: 'Marília' },
-  { id: 'bauru', nome: 'Bauru' },
-  { id: 'aracatuba', nome: 'Araçatuba' },
-  { id: 'dracena', nome: 'Dracena' },
-  { id: 'tupa', nome: 'Tupã' },
-  { id: 'ourinhos', nome: 'Ourinhos' },
   { id: 'adamantina', nome: 'Adamantina' },
+  { id: 'bataguassu', nome: 'Bataguassu' },
+  { id: 'campo-grande', nome: 'Campo Grande' },
+  { id: 'dracena', nome: 'Dracena' },
+  { id: 'nova-andradina', nome: 'Nova Andradina' },
+  { id: 'osvaldo-cruz', nome: 'Osvaldo Cruz' },
+  { id: 'presidente-epitacio', nome: 'Presidente Epitácio' },
+  { id: 'presidente-prudente', nome: 'Presidente Prudente' },
+  { id: 'presidente-venceslau', nome: 'Presidente Venceslau' },
 ];
 
 export function findUnidadeById(id) {
