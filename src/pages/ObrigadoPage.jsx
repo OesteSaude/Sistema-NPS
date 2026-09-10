@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import PageShell from '../components/PageShell';
+import { supabase } from '../lib/supabaseClient.js'; 
 import './ObrigadoPage.css';
 
 const STAR_COUNT = 5;
@@ -13,6 +14,7 @@ export default function ObrigadoPage() {
   });
 
   const [status, setStatus] = useState('form');
+  const [loading, setLoading] = useState(false);
 
   const formatPhone = (value) => {
     const numbers = value.replace(/\D/g, '');
@@ -32,11 +34,38 @@ export default function ObrigadoPage() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Envia os dados para a API se necessário
-    console.log('Inscrição no sorteio:', formData);
-    setStatus('success_sorteio');
+    setLoading(true);
+
+    try {
+      // Envio dos dados para a tabela sorteio_participantes
+      const { data, error } = await supabase
+        .from('sorteio_participantes')
+        .insert([
+          {
+            nome: formData.nome,
+            cidade: formData.cidade,
+            telefone: formData.telefone,
+          },
+        ])
+        .select();
+
+      if (error) {
+        console.error('Erro ao salvar no Supabase:', error);
+        alert('Ocorreu um erro ao registrar a participação: ' + error.message);
+        setLoading(false);
+        return;
+      }
+
+      console.log('Gravado com sucesso no Supabase:', data);
+      setStatus('success_sorteio');
+    } catch (err) {
+      console.error('Erro de conexão/execução:', err);
+      alert('Erro inesperado ao conectar com o banco de dados.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSkip = () => {
@@ -85,6 +114,7 @@ export default function ObrigadoPage() {
                   onChange={handleChange}
                   className="obrigado__input"
                   required
+                  disabled={loading}
                 />
               </div>
 
@@ -97,6 +127,7 @@ export default function ObrigadoPage() {
                   onChange={handleChange}
                   className="obrigado__input"
                   required
+                  disabled={loading}
                 />
               </div>
 
@@ -110,18 +141,24 @@ export default function ObrigadoPage() {
                   className="obrigado__input"
                   maxLength={15}
                   required
+                  disabled={loading}
                 />
               </div>
 
               <div className="obrigado__actions">
-                <button type="submit" className="obrigado__button obrigado__button--primary">
-                  Garantir minha participação
+                <button 
+                  type="submit" 
+                  className="obrigado__button obrigado__button--primary"
+                  disabled={loading}
+                >
+                  {loading ? 'Enviando...' : 'Garantir minha participação'}
                 </button>
 
                 <button
                   type="button"
                   onClick={handleSkip}
                   className="obrigado__button-skip"
+                  disabled={loading}
                 >
                   Não quero participar, apenas finalizar
                 </button>
