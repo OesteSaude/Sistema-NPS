@@ -1,3 +1,5 @@
+import ExportarRelatorioButton from './components/ExportarRelatorioButton';
+import SorteioButton from './components/SorteioButton';
 import { useEffect, useState } from 'react';
 import PageShell from '../../components/PageShell';
 import { useAuth } from '../../context/AuthContext';
@@ -10,6 +12,7 @@ import HistoricoAnual from './components/HistoricoAnual';
 import ComentariosRelevantes from './components/ComentariosRelevantes';
 import PalavrasCitadas from './components/PalavrasCitadas';
 import './DashboardPage.css';
+
 
 export default function DashboardPage() {
   const { signOut } = useAuth();
@@ -63,9 +66,8 @@ export default function DashboardPage() {
                 ))}
               </select>
             </label>
-            <button type="button" className="dash-btn" disabled title="Disponível na próxima etapa">
-              Exportar relatório
-            </button>
+            <SorteioButton mesBase={mesBase} />
+            <ExportarRelatorioButton mesBase={mesBase} resumo={resumo} anual={anual} />
             <button type="button" className="dash-link" onClick={signOut}>
               Sair
             </button>
