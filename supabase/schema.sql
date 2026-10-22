@@ -51,3 +51,58 @@ alter table sorteio_participantes enable row level security;
 create policy "qualquer um pode se inscrever no sorteio"
   on sorteio_participantes for insert
   with check (true);
+
+create table if not exists historico_mensal (
+  mes date primary key,
+  total_respostas integer not null check (total_respostas >= 0),
+  coleta_manual integer not null default 0 check (coleta_manual >= 0),
+  coleta_digital integer not null default 0 check (coleta_digital >= 0)
+);
+
+create table if not exists historico_mensal_notas (
+  mes date not null references historico_mensal(mes) on delete cascade,
+  nota smallint not null check (nota between 0 and 10),
+  quantidade integer not null check (quantidade >= 0),
+  primary key (mes, nota)
+);
+
+alter table historico_mensal enable row level security;
+alter table historico_mensal_notas enable row level security;
+
+create policy "historico mensal visivel publicamente"
+  on historico_mensal for select
+  using (true);
+
+create policy "historico notas visivel publicamente"
+  on historico_mensal_notas for select
+  using (true);
+
+create view historico_mensal_resumo as
+select
+  hm.mes,
+  hm.total_respostas,
+  hm.coleta_manual,
+  hm.coleta_digital,
+  sum(hn.quantidade) filter (where hn.nota between 9 and 10) as promotores,
+  sum(hn.quantidade) filter (where hn.nota between 7 and 8) as passivos,
+  sum(hn.quantidade) filter (where hn.nota between 0 and 6) as detratores,
+  round(
+    100.0 * sum(hn.quantidade) filter (where hn.nota between 9 and 10) / nullif(hm.total_respostas, 0),
+    1
+  ) as percentual_promotores,
+  round(
+    100.0 * sum(hn.quantidade) filter (where hn.nota between 7 and 8) / nullif(hm.total_respostas, 0),
+    1
+  ) as percentual_passivos,
+  round(
+    100.0 * sum(hn.quantidade) filter (where hn.nota between 0 and 6) / nullif(hm.total_respostas, 0),
+    1
+  ) as percentual_detratores,
+  round(
+    100.0 * sum(hn.quantidade) filter (where hn.nota between 9 and 10) / nullif(hm.total_respostas, 0)
+    - 100.0 * sum(hn.quantidade) filter (where hn.nota between 0 and 6) / nullif(hm.total_respostas, 0)
+  ) as nps_score
+from historico_mensal hm
+left join historico_mensal_notas hn on hn.mes = hm.mes
+group by hm.mes, hm.total_respostas, hm.coleta_manual, hm.coleta_digital;
+
