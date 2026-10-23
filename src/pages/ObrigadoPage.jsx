@@ -13,7 +13,7 @@ export default function ObrigadoPage() {
     telefone: '',
   });
 
-  const [status, setStatus] = useState('form');
+    const [status, setStatus] = useState('form');
   const [loading, setLoading] = useState(false);
 
   const formatPhone = (value) => {
@@ -102,6 +102,10 @@ export default function ObrigadoPage() {
           <div className="obrigado__content">
             <p className="obrigado__subtitle">
               Quer concorrer a prêmios? Preencha os dados abaixo para participar do sorteio:
+            </p>
+            <p className="obrigado__aviso">
+              Seu nome e telefone são usados somente para o sorteio e para contatar o ganhador. Eles não aparecem junto
+              dos comentários da pesquisa nem são enviados a ferramentas de análise.
             </p>
 
             <form className="obrigado__form" onSubmit={handleSubmit}>

@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useState } from 'react';
-import { findUnidadeById } from '../data/unidades';
 import { enviarRespostaPesquisa } from '../lib/surveySubmission';
+import { findUnidadeById, isOperadora } from '../data/unidades';
 
 export const SCREEN = {
   UNIDADE: 'unidade',
@@ -45,10 +45,14 @@ export function SurveyProvider({ children }) {
 
   const submitNotaCategoria = (categoriaComment) => {
     setState((prev) => ({ ...prev, categoriaComment }));
+    if (isOperadora(state.unidadeId)) {
+      finalizarPesquisa(false, {}, categoriaComment);
+      return;
+    }
     setOverlayOpen(true);
   };
 
-  const finalizarPesquisa = async (avaliouOutrosCriterios, criteriaRatings) => {
+     const finalizarPesquisa = async (avaliouOutrosCriterios, criteriaRatings, comentario = state.categoriaComment) => {
     setState((prev) => ({
       ...prev,
       criteriaRatings,
@@ -61,7 +65,7 @@ export function SurveyProvider({ children }) {
       await enviarRespostaPesquisa({
         unidadeId: state.unidadeId,
         homeScore: state.homeScore,
-        categoriaComment: state.categoriaComment,
+        categoriaComment: comentario,
         avaliouOutrosCriterios,
         criteriaRatings,
       });

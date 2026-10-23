@@ -2,12 +2,13 @@ import { forwardRef } from 'react';
 import GaugeNps from './GaugeNps';
 import DonutRespostas from './DonutRespostas';
 import HistoricoAnual from './HistoricoAnual';
-import { META_NPS, getZona, formatInt, formatPct, formatMes } from '../nps';
+import { META_NPS, getZona, formatInt, formatPct, formatMes, TIPOS } from '../nps';
 import './RelatorioNps.css';
+
 
 const percentual = (parte, total) => (total ? formatPct((100 * parte) / total) : '—');
 
-const RelatorioNps = forwardRef(function RelatorioNps({ mesBase, resumo, anual, janelas, palavras }, ref) {
+const RelatorioNps = forwardRef(function RelatorioNps({ mesBase, resumo, anual, janelas, palavras, tipo }, ref) {
   const nps = Number(resumo.nps_score);
   const zona = getZona(nps);
 
@@ -19,7 +20,7 @@ const RelatorioNps = forwardRef(function RelatorioNps({ mesBase, resumo, anual, 
           <div className="rel-muted">Operadora Oeste Saúde — Net Promoter Score</div>
         </div>
         <div className="rel-muted rel-direita">
-          Mês base: <b>{formatMes(mesBase)}</b> · Todas as unidades
+          Mês base: <b>{formatMes(mesBase)}</b> · {TIPOS[tipo]}
           <br />
           Gerado em {new Date().toLocaleDateString('pt-BR')}
         </div>

@@ -5,11 +5,13 @@ import ScoreScale from '../components/ScoreScale';
 import SubmitButton from '../components/SubmitButton';
 import { useSurvey } from '../context/SurveyContext';
 import { getFeedbackPrompt } from '../data/scoreCategories';
+import { isOperadora } from '../data/unidades';
 
 const COMMENT_LIMIT = 180;
 
 export default function NotaCategoriaPage() {
-  const { homeScore, submitNotaCategoria } = useSurvey();
+  const { homeScore, unidadeId, submitNotaCategoria } = useSurvey();
+  const obrigatorio = isOperadora(unidadeId);
   const [score, setScore] = useState(homeScore);
   const [comment, setComment] = useState('');
 
@@ -17,6 +19,7 @@ export default function NotaCategoriaPage() {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+        if (obrigatorio && !comment.trim()) return;
     submitNotaCategoria(comment);
   };
 
@@ -36,9 +39,10 @@ export default function NotaCategoriaPage() {
         {feedbackPrompt && (
           <div className="survey-comment">
             <label htmlFor="nota-comment">
-              <strong>{feedbackPrompt.label}</strong> {feedbackPrompt.hint} <em>(Opcional)</em>
+              <strong>{feedbackPrompt.label}</strong> {feedbackPrompt.hint} {!obrigatorio && <em>(Opcional)</em>}
             </label>
             <textarea
+              required={obrigatorio}
               id="nota-comment"
               maxLength={COMMENT_LIMIT}
               value={comment}

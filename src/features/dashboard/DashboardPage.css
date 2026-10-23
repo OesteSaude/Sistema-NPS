@@ -41,3 +41,5 @@
   .dash-gauge-card, .dash-donut-card, .dash-coment-card, .dash-hist-card, .dash-words-card { grid-column: span 12; grid-row: auto; }
   .dash-palavras { grid-template-columns: 1fr; }
 }
+.dash-filtros { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.dash-filtros select { font: inherit; font-size: 13px; padding: 8px 10px; border: 1px solid #b9cbd9; border-radius: 10px; background: #fff; color: #0f2d44; }

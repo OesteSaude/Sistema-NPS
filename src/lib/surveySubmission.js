@@ -30,13 +30,14 @@ export async function enviarRespostaPesquisa({
     ...buildCriteriaColumns(criteriaRatings),
   };
 
-  const { data, error } = await supabase.from('respostas_pesquisa').insert(payload).select('id').single();
+  const id = crypto.randomUUID();
+  const { error } = await supabase.from('respostas_pesquisa').insert({ id, ...payload });
 
   if (error) {
     throw error;
   }
 
-  return data.id;
+  return id;
 }
 
 export async function inscreverSorteio({ respostaId, nome, cidade, telefone }) {

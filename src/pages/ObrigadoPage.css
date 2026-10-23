@@ -141,3 +141,5 @@
   line-height: 1.4;
   margin: 0;
 }
+
+.obrigado__aviso { font-size: 12px; line-height: 1.4; opacity: 0.8; margin: 0 0 12px; }

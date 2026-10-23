@@ -38,3 +38,5 @@ export function contarPalavras(textos, limite = 15) {
     .sort((a, b) => b.quantidade - a.quantidade)
     .slice(0, limite);
 }
+
+export const TIPOS = { centro_medico: 'Centros Médicos', operadora: 'Operadora' };

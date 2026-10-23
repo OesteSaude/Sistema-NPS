@@ -4,11 +4,11 @@ import { contarPalavras } from '../nps';
 
 const CORES = ['#0f2d44', '#0a6d9c', '#0f6f66', '#3b6e2f'];
 
-export default function PalavrasCitadas() {
+export default function PalavrasCitadas({ tipo }) {
   const [palavras, setPalavras] = useState(null);
 
   useEffect(() => {
-    fetchTextosComentarios()
+    fetchTextosComentarios(tipo)
       .then((textos) => setPalavras(contarPalavras(textos)))
       .catch(() => setPalavras([]));
   }, []);
