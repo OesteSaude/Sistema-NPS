@@ -3,12 +3,13 @@ import SorteioButton from './components/SorteioButton';
 import { useEffect, useState } from 'react';
 import PageShell from '../../components/PageShell';
 import { useAuth } from '../../context/AuthContext';
-import { fetchMesesDisponiveis, fetchResumoMes, fetchHistoricoAnual } from './dashboardQueries';
+import { fetchMesesDisponiveis, fetchResumoMes } from './dashboardQueries';
+import { fetchResumoMensalCompleto } from './dashboardExtras';
 import { META_NPS, TIPOS, getZona, formatInt, formatPct, formatMes } from './nps';
 import KpiCard from './components/KpiCard';
 import GaugeNps from './components/GaugeNps';
 import DonutRespostas from './components/DonutRespostas';
-import HistoricoAnual from './components/HistoricoAnual';
+import HistoricoMensal from './components/HistoricoMensal';
 import ComentariosRelevantes from './components/ComentariosRelevantes';
 import PalavrasCitadas from './components/PalavrasCitadas';
 import './DashboardPage.css';
@@ -27,7 +28,7 @@ export default function DashboardPage() {
     setStatus('carregando');
     setMesBase(null);
     setResumo(null);
-    Promise.all([fetchMesesDisponiveis(tipo), fetchHistoricoAnual(tipo)])
+    Promise.all([fetchMesesDisponiveis(tipo), fetchResumoMensalCompleto(tipo)])
       .then(([listaMeses, historico]) => {
         setMeses(listaMeses.map((item) => item.mes));
         setAnual(historico);
@@ -128,8 +129,8 @@ export default function DashboardPage() {
                 <ComentariosRelevantes key={tipo} tipo={tipo} mesBase={mesBase} />
               </section>
               <section className="dash-card dash-hist-card">
-                <h2 className="dash-titulo">HISTÓRICO DE NPS POR ANO</h2>
-                <HistoricoAnual anual={anual} />
+                <h2 className="dash-titulo">EVOLUÇÃO MENSAL DO NPS</h2>
+                <HistoricoMensal meses={anual} mesBase={mesBase} />
               </section>
               <section className="dash-card dash-words-card">
                 <h2 className="dash-titulo">PALAVRAS MAIS CITADAS NOS COMENTÁRIOS</h2>

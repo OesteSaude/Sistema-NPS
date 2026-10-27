@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import GaugeNps from './GaugeNps';
-import HistoricoAnual from './HistoricoAnual';
+import HistoricoMensal from './HistoricoMensal';
 import RoscaJanela from './RoscaJanela';
 import { META_NPS, TIPOS, getZona, formatInt, formatPct, formatMes } from '../nps';
 import './RelatorioNps.css';
@@ -62,8 +62,8 @@ const RelatorioNps = forwardRef(function RelatorioNps({ mesBase, resumo, anual, 
 
       <div className="rel-base">
         <div className="rel-card">
-          <h2 className="rel-h2">HISTÓRICO DE NPS POR ANO</h2>
-          <HistoricoAnual anual={anual} />
+          <h2 className="rel-h2">EVOLUÇÃO MENSAL DO NPS</h2>
+          <HistoricoMensal meses={anual} mesBase={mesBase} />
         </div>
         <div className="rel-card">
           <h2 className="rel-h2">TOP 5 PALAVRAS NOS COMENTÁRIOS</h2>

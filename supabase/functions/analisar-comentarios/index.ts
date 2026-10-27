@@ -1,6 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
-const MODELO = 'gemini-3.8-flash';
+const MODELO = 'gemini-3.5-flash-lite';
 const MAX_COMENTARIOS = 300;
 const MAX_CARACTERES = 400;
 const DOMINIO = '@oestesaude.com.br';
@@ -33,6 +33,34 @@ Tarefa:
 Responda somente com JSON no formato:
 {"resumo": string, "temas": [{"nome": string, "descricao": string, "plano_acao": [string], "comentarios": [number]}]}`;
 
+const MODELO_RESERVA = 'gemini-3.8-flash';
+const TENTATIVAS = [MODELO, MODELO, MODELO_RESERVA];
+const ERROS_TEMPORARIOS = [429, 500, 502, 503, 504];
+const PAUSA_MS = 1500;
+
+async function chamarGemini(chave: string, corpo: string) {
+  let ultima: Response | null = null;
+  for (let tentativa = 0; tentativa < TENTATIVAS.length; tentativa++) {
+    const modelo = TENTATIVAS[tentativa];
+    try {
+      const resposta = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
+        method: 'POST',
+        signal: AbortSignal.timeout(40000),
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': chave },
+        body: corpo,
+      });
+      if (resposta.ok) return resposta;
+      console.error('Gemini', modelo, resposta.status, await resposta.text());
+      ultima = resposta;
+      if (!ERROS_TEMPORARIOS.includes(resposta.status)) return resposta;
+    } catch (erro) {
+      console.error('Falha ao chamar o Gemini', modelo, String(erro));
+    }
+    if (tentativa < TENTATIVAS.length - 1) await new Promise((resolver) => setTimeout(resolver, PAUSA_MS));
+  }
+  return ultima;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   if (req.method !== 'POST') return responder({ erro: 'Método não permitido.' }, 405);
@@ -62,18 +90,14 @@ Deno.serve(async (req) => {
 
   const entrada = lista.map((item: { texto: string }, indice: number) => ({ n: indice + 1, texto: item.texto }));
 
-  const resposta = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODELO}:generateContent`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': chave },
-    body: JSON.stringify({
-      contents: [{ role: 'user', parts: [{ text: `${INSTRUCOES}\n\nComentários:\n${JSON.stringify(entrada)}` }] }],
-      generationConfig: { responseMimeType: 'application/json', temperature: 0.2 },
-    }),
+    console.log('Enviando ao Gemini', lista.length, 'comentários');
+  const corpoGemini = JSON.stringify({
+    contents: [{ role: 'user', parts: [{ text: `${INSTRUCOES}\n\nComentários:\n${JSON.stringify(entrada)}` }] }],
+    generationConfig: { responseMimeType: 'application/json', temperature: 0.2 },
   });
-
-  if (!resposta.ok) {
-    console.error('Gemini', resposta.status, await resposta.text());
-    return responder({ erro: 'A IA não respondeu agora. Tente novamente em instantes.' }, 502);
+  const resposta = await chamarGemini(chave, corpoGemini);
+  if (!resposta || !resposta.ok) {
+    return responder({ erro: 'A IA está com alta demanda agora. Tente novamente em alguns instantes.' }, 503);
   }
 
   const resultado = await resposta.json();
