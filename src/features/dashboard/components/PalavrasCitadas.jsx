@@ -16,8 +16,9 @@ export default function PalavrasCitadas({ tipo }) {
   if (palavras === null) return <p className="dash-muted">Carregando palavras...</p>;
   if (palavras.length === 0) return <p className="dash-muted">Ainda não há comentários suficientes.</p>;
 
-  const maior = palavras[0].quantidade;
-  const menor = palavras[palavras.length - 1].quantidade;
+  const quantidades = palavras.map((item) => item.quantidade);
+  const maior = Math.max(...quantidades);
+  const menor = Math.min(...quantidades);
   const tamanho = (quantidade) => 16 + (maior === menor ? 0.5 : (quantidade - menor) / (maior - menor)) * 28;
 
   return (
