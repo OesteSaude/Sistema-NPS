@@ -3,18 +3,20 @@ import SorteioButton from './components/SorteioButton';
 import { useEffect, useState } from 'react';
 import PageShell from '../../components/PageShell';
 import { useAuth } from '../../context/AuthContext';
-import { fetchMesesDisponiveis, fetchResumoMes, fetchHistoricoAnual } from './dashboardQueries';
-import { META_NPS, getZona, formatInt, formatPct, formatMes } from './nps';
+import { fetchMesesDisponiveis, fetchResumoMes } from './dashboardQueries';
+import { fetchResumoMensalCompleto } from './dashboardExtras';
+import { META_NPS, TIPOS, getZona, formatInt, formatPct, formatMes } from './nps';
 import KpiCard from './components/KpiCard';
 import GaugeNps from './components/GaugeNps';
 import DonutRespostas from './components/DonutRespostas';
-import HistoricoAnual from './components/HistoricoAnual';
+import HistoricoMensal from './components/HistoricoMensal';
 import ComentariosRelevantes from './components/ComentariosRelevantes';
 import PalavrasCitadas from './components/PalavrasCitadas';
 import './DashboardPage.css';
 
 
 export default function DashboardPage() {
+  const [tipo, setTipo] = useState('centro_medico');
   const { signOut } = useAuth();
   const [meses, setMeses] = useState([]);
   const [mesBase, setMesBase] = useState(null);
@@ -22,8 +24,11 @@ export default function DashboardPage() {
   const [anual, setAnual] = useState([]);
   const [status, setStatus] = useState('carregando');
 
-  useEffect(() => {
-    Promise.all([fetchMesesDisponiveis(), fetchHistoricoAnual()])
+    useEffect(() => {
+    setStatus('carregando');
+    setMesBase(null);
+    setResumo(null);
+    Promise.all([fetchMesesDisponiveis(tipo), fetchResumoMensalCompleto(tipo)])
       .then(([listaMeses, historico]) => {
         setMeses(listaMeses.map((item) => item.mes));
         setAnual(historico);
@@ -31,11 +36,11 @@ export default function DashboardPage() {
         else setMesBase(listaMeses[0].mes);
       })
       .catch(() => setStatus('erro'));
-  }, []);
+  }, [tipo]);
 
   useEffect(() => {
     if (!mesBase) return;
-    fetchResumoMes(mesBase)
+    fetchResumoMes(mesBase, tipo)
       .then((dados) => {
         setResumo(dados);
         setStatus('ok');
@@ -53,9 +58,19 @@ export default function DashboardPage() {
         <div className="dash-header">
           <div>
             <h1 className="dash-h1">Dashboard de NPS</h1>
-            <p className="dash-muted">Visão geral · Oeste Saúde</p>
+            <p className="dash-muted">Visão geral · {TIPOS[tipo]}</p>
           </div>
           <div className="dash-controles">
+            <label>
+              Segmento
+              <select value={tipo} onChange={(evento) => setTipo(evento.target.value)}>
+                {Object.entries(TIPOS).map(([id, nome]) => (
+                  <option key={id} value={id}>
+                    {nome}
+                  </option>
+                ))}
+              </select>
+            </label>
             <label>
               Mês base
               <select value={mesBase ?? ''} onChange={(evento) => setMesBase(evento.target.value)} disabled={!mesBase}>
@@ -66,8 +81,8 @@ export default function DashboardPage() {
                 ))}
               </select>
             </label>
-            <SorteioButton mesBase={mesBase} />
-            <ExportarRelatorioButton mesBase={mesBase} resumo={resumo} anual={anual} />
+            {tipo === 'centro_medico' && <SorteioButton mesBase={mesBase} />}
+            <ExportarRelatorioButton mesBase={mesBase} resumo={resumo} anual={anual} tipo={tipo} />
             <button type="button" className="dash-link" onClick={signOut}>
               Sair
             </button>
@@ -93,7 +108,7 @@ export default function DashboardPage() {
                 }
               />
               <KpiCard rotulo="PROMOTORES" valor={formatPct(resumo.pct_promotores)} cor="#29a9e0" detalhe={<span className="dash-muted">notas 9 e 10</span>} />
-              <KpiCard rotulo="PERÍODO ANALISADO" valor={formatMes(mesBase)} cor="#0f2d44" destaque detalhe={<span className="dash-muted">todas as unidades</span>} />
+              <KpiCard rotulo="PERÍODO ANALISADO" valor={formatMes(mesBase)} cor="#0f2d44" destaque detalhe={<span className="dash-muted">{TIPOS[tipo]}</span>} />
             </div>
 
             <div className="dash-grid">
@@ -111,15 +126,15 @@ export default function DashboardPage() {
                 />
               </section>
               <section className="dash-card dash-coment-card">
-                <ComentariosRelevantes />
+                <ComentariosRelevantes key={tipo} tipo={tipo} mesBase={mesBase} />
               </section>
               <section className="dash-card dash-hist-card">
-                <h2 className="dash-titulo">HISTÓRICO DE NPS POR ANO</h2>
-                <HistoricoAnual anual={anual} />
+                <h2 className="dash-titulo">EVOLUÇÃO MENSAL DO NPS</h2>
+                <HistoricoMensal meses={anual} mesBase={mesBase} />
               </section>
               <section className="dash-card dash-words-card">
                 <h2 className="dash-titulo">PALAVRAS MAIS CITADAS NOS COMENTÁRIOS</h2>
-                <PalavrasCitadas />
+                <PalavrasCitadas key={tipo} tipo={tipo} />
               </section>
             </div>
           </>

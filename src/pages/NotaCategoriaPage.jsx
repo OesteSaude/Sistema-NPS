@@ -5,19 +5,31 @@ import ScoreScale from '../components/ScoreScale';
 import SubmitButton from '../components/SubmitButton';
 import { useSurvey } from '../context/SurveyContext';
 import { getFeedbackPrompt } from '../data/scoreCategories';
+import { isOperadora } from '../data/unidades';
+import { CIDADES, encontrarCidade } from '../data/cidades';
 
 const COMMENT_LIMIT = 180;
 
 export default function NotaCategoriaPage() {
-  const { homeScore, submitNotaCategoria } = useSurvey();
+  const { homeScore, unidadeId, submitNotaCategoria } = useSurvey();
+  const obrigatorio = isOperadora(unidadeId);
   const [score, setScore] = useState(homeScore);
   const [comment, setComment] = useState('');
+  const [cidade, setCidade] = useState('');
 
   const feedbackPrompt = score === null ? null : getFeedbackPrompt(score);
 
+  const handleCidade = (event) => {
+  const { value } = event.target;
+  const encontrada = encontrarCidade(value);
+  setCidade(encontrada ?? value);
+  event.target.setCustomValidity(encontrada ? '' : 'Escolha uma cidade da lista.');
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
-    submitNotaCategoria(comment);
+        if (obrigatorio && !comment.trim()) return;
+    submitNotaCategoria(comment, obrigatorio ? cidade : null);
   };
 
   return (
@@ -33,12 +45,35 @@ export default function NotaCategoriaPage() {
           <ScoreScale selectedScore={score} onSelect={setScore} />
         </div>
 
+        {obrigatorio && (
+          <div className="survey-comment">
+            <label htmlFor="nota-cidade">
+              <strong>Em qual cidade você mora?</strong>
+            </label>
+            <input
+              id="nota-cidade"
+              type="text"
+              list="lista-cidades-pesquisa"
+              value={cidade}
+              onChange={handleCidade}
+              autoComplete="off"
+              required
+            />
+            <datalist id="lista-cidades-pesquisa">
+              {CIDADES.map((nome) => (
+                <option key={nome} value={nome} />
+              ))}
+            </datalist>
+          </div>
+        )}
+
         {feedbackPrompt && (
           <div className="survey-comment">
             <label htmlFor="nota-comment">
-              <strong>{feedbackPrompt.label}</strong> {feedbackPrompt.hint} <em>(Opcional)</em>
+              <strong>{feedbackPrompt.label}</strong> {feedbackPrompt.hint} {!obrigatorio && <em>(Opcional)</em>}
             </label>
             <textarea
+              required={obrigatorio}
               id="nota-comment"
               maxLength={COMMENT_LIMIT}
               value={comment}

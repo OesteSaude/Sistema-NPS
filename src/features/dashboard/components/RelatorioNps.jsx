@@ -1,25 +1,26 @@
 import { forwardRef } from 'react';
 import GaugeNps from './GaugeNps';
-import DonutRespostas from './DonutRespostas';
-import HistoricoAnual from './HistoricoAnual';
-import { META_NPS, getZona, formatInt, formatPct, formatMes } from '../nps';
+import HistoricoMensal from './HistoricoMensal';
+import RoscaJanela from './RoscaJanela';
+import { META_NPS, TIPOS, getZona, formatInt, formatPct, formatMes } from '../nps';
 import './RelatorioNps.css';
 
-const percentual = (parte, total) => (total ? formatPct((100 * parte) / total) : '—');
-
-const RelatorioNps = forwardRef(function RelatorioNps({ mesBase, resumo, anual, janelas, palavras }, ref) {
+const RelatorioNps = forwardRef(function RelatorioNps({ mesBase, resumo, anual, janelas, palavras, tipo }, ref) {
   const nps = Number(resumo.nps_score);
   const zona = getZona(nps);
 
   return (
     <div className="rel" ref={ref}>
       <div className="rel-topo">
-        <div>
-          <div className="rel-titulo">Oeste Saúde · Relatório de NPS</div>
-          <div className="rel-muted">Operadora Oeste Saúde — Net Promoter Score</div>
+        <div className="rel-marca">
+          <img src={`${import.meta.env.BASE_URL}logo_oestesaude_svg.svg`} alt="Oeste Saúde" className="rel-logo" />
+          <div>
+            <div className="rel-titulo">Relatório de NPS</div>
+            <div className="rel-muted">Net Promoter Score · {TIPOS[tipo]}</div>
+          </div>
         </div>
         <div className="rel-muted rel-direita">
-          Mês base: <b>{formatMes(mesBase)}</b> · Todas as unidades
+          Mês base: <b>{formatMes(mesBase)}</b> · {TIPOS[tipo]}
           <br />
           Gerado em {new Date().toLocaleDateString('pt-BR')}
         </div>
@@ -50,63 +51,19 @@ const RelatorioNps = forwardRef(function RelatorioNps({ mesBase, resumo, anual, 
           <GaugeNps nps={nps} />
         </div>
         <div className="rel-card">
-          <h2 className="rel-h2">RESPOSTAS</h2>
-          <DonutRespostas
-            promotores={Number(resumo.promotores)}
-            passivos={Number(resumo.passivos)}
-            detratores={Number(resumo.detratores)}
-            total={Number(resumo.total)}
-          />
-        </div>
-        <div className="rel-card">
-          <h2 className="rel-h2">RAIO-X POR JANELA DE TEMPO</h2>
-          <table>
-            <thead>
-              <tr>
-                <th />
-                {janelas.map((janela) => (
-                  <th key={janela.id}>{janela.rotulo}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th>NPS</th>
-                {janelas.map((janela) => (
-                  <td key={janela.id}>
-                    <b>{janela.nps ?? '—'}</b>
-                  </td>
-                ))}
-              </tr>
-              {[
-                ['PRO', 'promotores'],
-                ['NEU', 'passivos'],
-                ['DET', 'detratores'],
-              ].map(([rotulo, chave]) => (
-                <tr key={rotulo}>
-                  <th>{rotulo}</th>
-                  {janelas.map((janela) => (
-                    <td key={janela.id}>
-                      {formatInt(janela[chave])} ({percentual(janela[chave], janela.total)})
-                    </td>
-                  ))}
-                </tr>
-              ))}
-              <tr>
-                <th>TOTAL</th>
-                {janelas.map((janela) => (
-                  <td key={janela.id}>{formatInt(janela.total)}</td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
+          <h2 className="rel-h2">RAIO-X DO NET PROMOTER SCORE</h2>
+          <div className="rel-roscas">
+            {janelas.map((janela) => (
+              <RoscaJanela key={janela.id} janela={janela} />
+            ))}
+          </div>
         </div>
       </div>
 
       <div className="rel-base">
         <div className="rel-card">
-          <h2 className="rel-h2">HISTÓRICO DE NPS POR ANO</h2>
-          <HistoricoAnual anual={anual} />
+          <h2 className="rel-h2">EVOLUÇÃO MENSAL DO NPS</h2>
+          <HistoricoMensal meses={anual} mesBase={mesBase} />
         </div>
         <div className="rel-card">
           <h2 className="rel-h2">TOP 5 PALAVRAS NOS COMENTÁRIOS</h2>

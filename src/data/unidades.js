@@ -8,8 +8,11 @@ export const UNIDADES = [
   { id: 'presidente-epitacio', nome: 'Presidente Epitácio' },
   { id: 'presidente-prudente', nome: 'Presidente Prudente' },
   { id: 'presidente-venceslau', nome: 'Presidente Venceslau' },
+  { id: 'operadora', nome: 'Operadora' },
 ];
 
 export function findUnidadeById(id) {
   return UNIDADES.find((unidade) => unidade.id === id) ?? null;
 }
+
+export const isOperadora = (id) => id === 'operadora';

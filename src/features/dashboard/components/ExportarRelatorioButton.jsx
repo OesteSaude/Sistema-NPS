@@ -5,7 +5,7 @@ import { fetchTextosComentarios } from '../dashboardQueries';
 import { fetchResumoMensalCompleto, calcularJanelas } from '../dashboardExtras';
 import { contarPalavras } from '../nps';
 
-export default function ExportarRelatorioButton({ mesBase, resumo, anual }) {
+export default function ExportarRelatorioButton({ mesBase, resumo, anual, tipo }) {
   const relatorioRef = useRef(null);
   const [dados, setDados] = useState(null);
   const [estado, setEstado] = useState('parado');
@@ -13,7 +13,7 @@ export default function ExportarRelatorioButton({ mesBase, resumo, anual }) {
   const iniciar = async () => {
     setEstado('gerando');
     try {
-      const [meses, textos] = await Promise.all([fetchResumoMensalCompleto(), fetchTextosComentarios()]);
+      const [meses, textos] = await Promise.all([fetchResumoMensalCompleto(tipo), fetchTextosComentarios(tipo)]);
       setDados({ janelas: calcularJanelas(meses, mesBase), palavras: contarPalavras(textos, 5) });
     } catch {
       setEstado('erro');
@@ -49,7 +49,7 @@ export default function ExportarRelatorioButton({ mesBase, resumo, anual }) {
       )}
       {dados && resumo && (
         <div className="rel-offscreen" aria-hidden="true">
-          <RelatorioNps ref={relatorioRef} mesBase={mesBase} resumo={resumo} anual={anual} {...dados} />
+          <RelatorioNps ref={relatorioRef} mesBase={mesBase} resumo={resumo} anual={anual} tipo={tipo} {...dados} />
         </div>
       )}
     </>

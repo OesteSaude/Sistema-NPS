@@ -1,7 +1,11 @@
 import { supabase } from '../../lib/supabaseClient';
 
-export async function fetchResumoMensalCompleto() {
-  const { data, error } = await supabase.from('mensal_resumo_nps').select('*').order('mes', { ascending: true });
+export async function fetchResumoMensalCompleto(tipo) {
+  const { data, error } = await supabase
+    .from('mensal_resumo_nps')
+    .select('*')
+    .eq('tipo', tipo)
+    .order('mes', { ascending: true });
   if (error) throw error;
   return data;
 }
@@ -38,4 +42,18 @@ export function calcularJanelas(meses, mesBase) {
     const nps = soma.total ? Math.round((100 * (soma.promotores - soma.detratores)) / soma.total) : null;
     return { id: janela.id, rotulo: janela.rotulo, ...soma, nps };
   });
+}
+
+export function intervaloPeriodo(periodo, mesBase) {
+  const janela = JANELAS.find((item) => item.id === periodo);
+  return { inicio: janela.inicio(mesBase), fim: somarMeses(mesBase, 1) };
+}
+
+export async function analisarComentarios(comentarios) {
+  const { data, error } = await supabase.functions.invoke('analisar-comentarios', { body: { comentarios } });
+  if (error) {
+    const corpo = await error.context?.json?.().catch(() => null);
+    throw new Error(corpo?.erro ?? 'Não foi possível gerar a análise.');
+  }
+  return data;
 }

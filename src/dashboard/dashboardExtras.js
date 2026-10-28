@@ -39,3 +39,8 @@ export function calcularJanelas(meses, mesBase) {
     return { id: janela.id, rotulo: janela.rotulo, ...soma, nps };
   });
 }
+
+export function intervaloPeriodo(periodo, mesBase) {
+  const janela = JANELAS.find((item) => item.id === periodo);
+  return { inicio: janela.inicio(mesBase), fim: somarMeses(mesBase, 1) };
+}

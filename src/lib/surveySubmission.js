@@ -15,6 +15,7 @@ function buildCriteriaColumns(criteriaRatings) {
 
 export async function enviarRespostaPesquisa({
   unidadeId,
+  cidade,
   homeScore,
   categoriaComment,
   avaliouOutrosCriterios,
@@ -23,6 +24,7 @@ export async function enviarRespostaPesquisa({
   const payload = {
     origem: 'sistema',
     unidade_id: unidadeId,
+    cidade: cidade || null,
     nps_score: homeScore,
     categoria: homeScore === null ? null : getScoreCategory(homeScore),
     categoria_comentario: categoriaComment || null,
@@ -30,13 +32,14 @@ export async function enviarRespostaPesquisa({
     ...buildCriteriaColumns(criteriaRatings),
   };
 
-  const { data, error } = await supabase.from('respostas_pesquisa').insert(payload).select('id').single();
+  const id = crypto.randomUUID();
+  const { error } = await supabase.from('respostas_pesquisa').insert({ id, ...payload });
 
   if (error) {
     throw error;
   }
 
-  return data.id;
+  return id;
 }
 
 export async function inscreverSorteio({ respostaId, nome, cidade, telefone }) {
