@@ -42,7 +42,7 @@ export const fetchTextosComentarios = async (tipo) => {
   return data.map((linha) => linha.categoria_comentario);
 };
 
-const aplicarFiltros = (consulta, { tipo, nota, unidadeId, inicio, fim }) => {
+const aplicarFiltros = (consulta, { tipo, nota, unidadeId, cidade, inicio, fim }) => {
   let resultado = consulta;
 
   if (inicio) resultado = resultado.gte('created_at', `${inicio}T00:00:00-03:00`).lt('created_at', `${fim}T00:00:00-03:00`);
@@ -56,13 +56,13 @@ const aplicarFiltros = (consulta, { tipo, nota, unidadeId, inicio, fim }) => {
   else if (nota === 'pro') resultado = resultado.gte('nps_score', 9);
   else if (nota !== '') resultado = resultado.eq('nps_score', Number(nota));
 
-  return resultado;
+  if (tipo === 'operadora' && cidade) resultado = resultado.eq('cidade', cidade);
 };
 
 export const fetchComentariosFiltrados = async (offset, limite, filtros) => {
   const consulta = supabase
     .from('respostas_pesquisa')
-    .select('id, created_at, nps_score, unidade_id, categoria_comentario')
+    .select('id, created_at, nps_score, unidade_id, cidade, categoria_comentario')
     .not('categoria_comentario', 'is', null)
     .neq('categoria_comentario', '')
     .order('created_at', { ascending: false })
@@ -71,8 +71,6 @@ export const fetchComentariosFiltrados = async (offset, limite, filtros) => {
   const data = await run(aplicarFiltros(consulta, filtros));
   return data.map((linha) => ({ ...linha, comentario: linha.categoria_comentario }));
 };
-
-const mesLocal = (data) => new Date(data).toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' }).slice(0, 7);
 
 export const fetchComentariosParaAnalise = async (filtros) => {
   const consulta = supabase

@@ -3,18 +3,20 @@ import PageShell from '../components/PageShell';
 import { supabase } from '../lib/supabaseClient.js'; 
 import './ObrigadoPage.css';
 import { CIDADES, encontrarCidade } from '../data/cidades';
+import { useSurvey } from '../context/SurveyContext';
 
 const STAR_COUNT = 5;
 const HIGHLIGHTED_STAR_INDEX = 2;
 
 export default function ObrigadoPage() {
+  const { cidade: cidadePesquisa } = useSurvey();
   const [formData, setFormData] = useState({
     nome: '',
-    cidade: '',
+    cidade: cidadePesquisa ?? '',
     telefone: '',
   });
 
-    const [status, setStatus] = useState('form');
+  const [status, setStatus] = useState('form');
   const [loading, setLoading] = useState(false);
 
   const formatPhone = (value) => {
@@ -48,16 +50,13 @@ export default function ObrigadoPage() {
 
     try {
       // Envio dos dados para a tabela sorteio_participantes
-      const { data, error } = await supabase
-        .from('sorteio_participantes')
-        .insert([
-          {
-            nome: formData.nome,
-            cidade: formData.cidade,
-            telefone: formData.telefone,
-          },
-        ])
-        .select();
+      const { error } = await supabase.from('sorteio_participantes').insert([
+        {
+          nome: formData.nome,
+          cidade: formData.cidade,
+          telefone: formData.telefone,
+        },
+      ]);
 
       if (error) {
         console.error('Erro ao salvar no Supabase:', error);
@@ -66,7 +65,6 @@ export default function ObrigadoPage() {
         return;
       }
 
-      console.log('Gravado com sucesso no Supabase:', data);
       setStatus('success_sorteio');
     } catch (err) {
       console.error('Erro de conexão/execução:', err);

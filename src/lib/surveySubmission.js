@@ -15,6 +15,7 @@ function buildCriteriaColumns(criteriaRatings) {
 
 export async function enviarRespostaPesquisa({
   unidadeId,
+  cidade,
   homeScore,
   categoriaComment,
   avaliouOutrosCriterios,
@@ -23,6 +24,7 @@ export async function enviarRespostaPesquisa({
   const payload = {
     origem: 'sistema',
     unidade_id: unidadeId,
+    cidade: cidade || null,
     nps_score: homeScore,
     categoria: homeScore === null ? null : getScoreCategory(homeScore),
     categoria_comentario: categoriaComment || null,

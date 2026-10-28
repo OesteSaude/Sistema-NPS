@@ -43,16 +43,16 @@ export function SurveyProvider({ children }) {
     setState((prev) => ({ ...prev, homeScore, screen: SCREEN.NOTA_CATEGORIA }));
   };
 
-  const submitNotaCategoria = (categoriaComment) => {
-    setState((prev) => ({ ...prev, categoriaComment }));
+    const submitNotaCategoria = (categoriaComment, cidade = null) => {
+    setState((prev) => ({ ...prev, categoriaComment, cidade }));
     if (isOperadora(state.unidadeId)) {
-      finalizarPesquisa(false, {}, categoriaComment);
+      finalizarPesquisa(false, {}, categoriaComment, cidade);
       return;
     }
     setOverlayOpen(true);
   };
 
-     const finalizarPesquisa = async (avaliouOutrosCriterios, criteriaRatings, comentario = state.categoriaComment) => {
+    const finalizarPesquisa = async (avaliouOutrosCriterios, criteriaRatings, comentario = state.categoriaComment, cidade = state.cidade) => {
     setState((prev) => ({
       ...prev,
       criteriaRatings,
@@ -68,9 +68,11 @@ export function SurveyProvider({ children }) {
         categoriaComment: comentario,
         avaliouOutrosCriterios,
         criteriaRatings,
+        cidade,
       });
       setState((prev) => ({ ...prev, submissionStatus: 'sucesso' }));
     } catch (error) {
+      console.error('Falha ao enviar a resposta:', error);
       setState((prev) => ({ ...prev, submissionStatus: 'erro', submissionError: error.message }));
     }
   };
