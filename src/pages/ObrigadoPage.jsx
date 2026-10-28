@@ -2,6 +2,7 @@ import { useState } from 'react';
 import PageShell from '../components/PageShell';
 import { supabase } from '../lib/supabaseClient.js'; 
 import './ObrigadoPage.css';
+import { CIDADES, encontrarCidade } from '../data/cidades';
 
 const STAR_COUNT = 5;
 const HIGHLIGHTED_STAR_INDEX = 2;
@@ -28,10 +29,17 @@ export default function ObrigadoPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === 'telefone' ? formatPhone(value) : value,
-    }));
+    let novoValor = value;
+
+    if (name === 'telefone') novoValor = formatPhone(value);
+
+    if (name === 'cidade') {
+      const cidade = encontrarCidade(value);
+      novoValor = cidade ?? value;
+      e.target.setCustomValidity(cidade ? '' : 'Escolha uma cidade da lista.');
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: novoValor }));
   };
 
   const handleSubmit = async (e) => {
@@ -126,13 +134,19 @@ export default function ObrigadoPage() {
                 <input
                   type="text"
                   name="cidade"
+                  list="lista-cidades"
                   placeholder="CIDADE"
                   value={formData.cidade}
                   onChange={handleChange}
                   className="obrigado__input"
+                  autoComplete="off"
                   required
-                  disabled={loading}
                 />
+                <datalist id="lista-cidades">
+                  {CIDADES.map((cidade) => (
+                    <option key={cidade} value={cidade} />
+                  ))}
+                </datalist>
               </div>
 
               <div className="obrigado__field">
@@ -156,15 +170,6 @@ export default function ObrigadoPage() {
                   disabled={loading}
                 >
                   {loading ? 'Enviando...' : 'Garantir minha participação'}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleSkip}
-                  className="obrigado__button-skip"
-                  disabled={loading}
-                >
-                  Não quero participar, apenas finalizar
                 </button>
               </div>
             </form>
