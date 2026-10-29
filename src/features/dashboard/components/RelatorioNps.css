@@ -1,0 +1,34 @@
+.rel-offscreen { position: fixed; left: -99999px; top: 0; pointer-events: none; }
+.rel { width: 1920px; height: 1080px; box-sizing: border-box; padding: 36px 48px; background: #f4f8fb; color: #0f2d44; display: flex; flex-direction: column; gap: 20px; }
+.rel-topo { display: flex; justify-content: space-between; align-items: flex-end; height: 64px; }
+.rel-titulo { font-size: 40px; font-weight: 800; }
+.rel-muted { color: #4a6275; font-size: 15px; }
+.rel-direita { text-align: right; }
+.rel-card { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(15, 45, 68, 0.08); padding: 20px 24px; box-sizing: border-box; }
+.rel-h2 { margin: 0 0 8px; font-size: 15px; font-weight: 800; letter-spacing: 0.06em; }
+.rel-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; height: 110px; }
+.rel-kpi { border-left: 8px solid; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+.rel-kpi b { font-size: 48px; line-height: 1; }
+.rel-kpi .rel-kpi__texto { font-size: 36px; }
+.rel-meio { display: grid; grid-template-columns: 480px 1fr; gap: 24px; height: 460px; }
+.rel-meio .dash-gauge { height: 250px; }
+.rel-roscas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.rel-rosca { background: #f4f8fb; border-radius: 14px; padding: 14px 12px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.rel-rosca__titulo { font-size: 16px; font-weight: 800; letter-spacing: 0.06em; }
+.rel-rosca__grafico { width: 176px; height: 176px; }
+.rel-rosca__linhas { width: 100%; display: flex; flex-direction: column; gap: 4px; padding: 0 16px; box-sizing: border-box; }
+.rel-rosca__linha { display: grid; grid-template-columns: 14px 42px 1fr auto; gap: 8px; align-items: center; font-size: 17px; }
+.rel-rosca__linha i { width: 12px; height: 12px; border-radius: 50%; }
+.rel-rosca__linha span:nth-of-type(1) { text-align: right; font-weight: 700; }
+.rel-rosca__linha .rel-muted { font-size: 15px; min-width: 62px; text-align: right; }
+.rel-rosca__total { font-size: 15px; font-weight: 800; color: #4a6275; }
+.rel-rosca__meta { font-size: 14px; font-weight: 800; padding: 4px 12px; border-radius: 999px; }
+.rel-rosca__meta--ok { background: #d9f2dd; color: #1f5f27; }
+.rel-rosca__meta--falta { background: #fdecc8; color: #7a4b00; }
+.rel-base { display: grid; grid-template-columns: 1.4fr 1fr; gap: 24px; flex: 1; min-height: 0; }
+.rel-ranking { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; font-size: 18px; }
+.rel-ranking li { display: flex; gap: 10px; }
+.rel-ranking li span:nth-child(2) { flex: 1; }
+.rel-ranking b { width: 28px; }
+.rel-marca { display: flex; align-items: center; gap: 24px; }
+.rel-logo { height: 52px; width: auto; }

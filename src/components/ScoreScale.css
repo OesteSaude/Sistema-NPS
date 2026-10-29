@@ -1,0 +1,32 @@
+.score-scale {
+  display: grid;
+  grid-template-columns: repeat(11, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.score-scale__item {
+  aspect-ratio: 1 / 1;
+  border: none;
+  border-radius: 8px;
+  background-color: #b4b2a9;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.score-scale__item:hover {
+  transform: translateY(-2px);
+}
+
+.score-scale__item:focus-visible {
+  outline: 3px solid #0f2d44;
+  outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+  .score-scale {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}

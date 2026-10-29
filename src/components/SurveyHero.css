@@ -1,0 +1,11 @@
+.survey-hero {
+  font-size: 40px;
+  line-height: 1.25;
+  color: #0f2d44;
+  font-weight: 800;
+  margin: 0 0 48px;
+}
+
+.survey-hero__highlight {
+  color: #29a9e0;
+}

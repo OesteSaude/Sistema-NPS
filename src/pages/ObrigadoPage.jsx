@@ -1,0 +1,199 @@
+import { useState } from 'react';
+import PageShell from '../components/PageShell';
+import { supabase } from '../lib/supabaseClient.js'; 
+import './ObrigadoPage.css';
+import { CIDADES, encontrarCidade } from '../data/cidades';
+import { useSurvey } from '../context/SurveyContext';
+
+const STAR_COUNT = 5;
+const HIGHLIGHTED_STAR_INDEX = 2;
+
+export default function ObrigadoPage() {
+  const { cidade: cidadePesquisa } = useSurvey();
+  const [formData, setFormData] = useState({
+    nome: '',
+    cidade: cidadePesquisa ?? '',
+    telefone: '',
+  });
+
+  const [status, setStatus] = useState('form');
+  const [loading, setLoading] = useState(false);
+
+  const formatPhone = (value) => {
+    const numbers = value.replace(/\D/g, '');
+    const truncated = numbers.slice(0, 11);
+
+    if (truncated.length <= 2) return truncated ? `(${truncated}` : '';
+    if (truncated.length <= 6) return `(${truncated.slice(0, 2)}) ${truncated.slice(2)}`;
+    if (truncated.length <= 10) return `(${truncated.slice(0, 2)}) ${truncated.slice(2, 6)}-${truncated.slice(6)}`;
+    return `(${truncated.slice(0, 2)}) ${truncated.slice(2, 7)}-${truncated.slice(7, 11)}`;
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    let novoValor = value;
+
+    if (name === 'telefone') novoValor = formatPhone(value);
+
+    if (name === 'cidade') {
+      const cidade = encontrarCidade(value);
+      novoValor = cidade ?? value;
+      e.target.setCustomValidity(cidade ? '' : 'Escolha uma cidade da lista.');
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: novoValor }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      // Envio dos dados para a tabela sorteio_participantes
+      const { error } = await supabase.from('sorteio_participantes').insert([
+        {
+          nome: formData.nome,
+          cidade: formData.cidade,
+          telefone: formData.telefone,
+        },
+      ]);
+
+      if (error) {
+        console.error('Erro ao salvar no Supabase:', error);
+        alert('Ocorreu um erro ao registrar a participação: ' + error.message);
+        setLoading(false);
+        return;
+      }
+
+      setStatus('success_sorteio');
+    } catch (err) {
+      console.error('Erro de conexão/execução:', err);
+      alert('Erro inesperado ao conectar com o banco de dados.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSkip = () => {
+    setStatus('skipped');
+  };
+
+  return (
+    <PageShell>
+      <div className="obrigado">
+        {/* Estrelas do Topo */}
+        <div className="obrigado__stars" aria-hidden="true">
+          {Array.from({ length: STAR_COUNT }, (_, index) => (
+            <span
+              key={index}
+              className={
+                index === HIGHLIGHTED_STAR_INDEX
+                  ? 'obrigado__star obrigado__star--active'
+                  : 'obrigado__star'
+              }
+            >
+              ★
+            </span>
+          ))}
+        </div>
+
+        {/* Título Principal */}
+        <p className="obrigado__title">
+          <strong>Obrigado</strong> por participar
+          <br />
+          da nossa pesquisa!
+        </p>
+
+        {status === 'form' && (
+          <div className="obrigado__content">
+            <p className="obrigado__subtitle">
+              Quer concorrer a prêmios? Preencha os dados abaixo para participar do sorteio:
+            </p>
+            <p className="obrigado__aviso">
+              Seu nome e telefone são usados somente para o sorteio e para contatar o ganhador. Eles não aparecem junto
+              dos comentários da pesquisa nem são enviados a ferramentas de análise.
+            </p>
+
+            <form className="obrigado__form" onSubmit={handleSubmit}>
+              <div className="obrigado__field">
+                <input
+                  type="text"
+                  name="nome"
+                  placeholder="NOME"
+                  value={formData.nome}
+                  onChange={handleChange}
+                  className="obrigado__input"
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="obrigado__field">
+                <input
+                  type="text"
+                  name="cidade"
+                  list="lista-cidades"
+                  placeholder="CIDADE"
+                  value={formData.cidade}
+                  onChange={handleChange}
+                  className="obrigado__input"
+                  autoComplete="off"
+                  required
+                />
+                <datalist id="lista-cidades">
+                  {CIDADES.map((cidade) => (
+                    <option key={cidade} value={cidade} />
+                  ))}
+                </datalist>
+              </div>
+
+              <div className="obrigado__field">
+                <input
+                  type="tel"
+                  name="telefone"
+                  placeholder="TELEFONE PARA CONTATO"
+                  value={formData.telefone}
+                  onChange={handleChange}
+                  className="obrigado__input"
+                  maxLength={15}
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="obrigado__actions">
+                <button 
+                  type="submit" 
+                  className="obrigado__button obrigado__button--primary"
+                  disabled={loading}
+                >
+                  {loading ? 'Enviando...' : 'Garantir minha participação'}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {status === 'success_sorteio' && (
+          <div className="obrigado__feedback obrigado__feedback--success">
+            <div className="obrigado__check-icon">✓</div>
+            <h3>Inscrição Confirmada!</h3>
+            <p>
+              Sua participação no sorteio foi computada com sucesso. Boa sorte!
+            </p>
+          </div>
+        )}
+
+        {status === 'skipped' && (
+          <div className="obrigado__feedback">
+            <p className="obrigado__finished-text">
+              Sua avaliação foi registrada com sucesso.
+              <br />
+              A Oeste Saúde agradece a sua colaboração!
+            </p>
+          </div>
+        )}
+      </div>
+    </PageShell>
+  );
+}

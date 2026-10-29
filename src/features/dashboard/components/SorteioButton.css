@@ -1,0 +1,5 @@
+.sorteio-fundo { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; background: rgba(15, 45, 68, 0.45); padding: 24px; }
+.sorteio-caixa { width: 100%; max-width: 440px; background: #fff; border-radius: 20px; padding: 32px; color: #0f2d44; display: flex; flex-direction: column; gap: 8px; }
+.sorteio-titulo { margin: 0 0 8px; font-size: 22px; font-weight: 800; }
+.sorteio-nome { margin: 8px 0 0; font-size: 28px; font-weight: 800; }
+.sorteio-acoes { display: flex; align-items: center; gap: 16px; margin-top: 8px; }

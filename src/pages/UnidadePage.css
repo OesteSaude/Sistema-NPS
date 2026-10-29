@@ -1,0 +1,23 @@
+.unidade-page__title {
+  font-size: 36px;
+  line-height: 1.3;
+  color: #0f2d44;
+  font-weight: 800;
+  margin: 0 0 40px;
+}
+
+.unidade-page__title-highlight {
+  color: #29a9e0;
+}
+
+.unidade-page__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 720px) {
+  .unidade-page__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

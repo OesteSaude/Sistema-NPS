@@ -1,0 +1,28 @@
+.submit-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  border: none;
+  border-radius: 999px;
+  background: #29a9e0;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 800;
+  padding: 14px 12px 14px 32px;
+  cursor: pointer;
+}
+
+.submit-button:disabled {
+  background: #b4b2a9;
+  cursor: not-allowed;
+}
+
+.submit-button__icon {
+  display: block;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  padding: 8px;
+  box-sizing: border-box;
+}

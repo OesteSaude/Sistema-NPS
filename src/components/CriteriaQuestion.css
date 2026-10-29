@@ -1,0 +1,10 @@
+.criteria-question {
+  margin-bottom: 40px;
+}
+
+.criteria-question__label {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f2d44;
+  margin: 0 0 16px;
+}
