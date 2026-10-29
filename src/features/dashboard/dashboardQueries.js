@@ -51,12 +51,14 @@ const aplicarFiltros = (consulta, { tipo, nota, unidadeId, cidade, inicio, fim }
   else if (tipo === 'operadora') resultado = resultado.eq('unidade_id', 'operadora');
   else resultado = resultado.or('unidade_id.is.null,unidade_id.neq.operadora');
 
+  if (tipo === 'operadora' && cidade) resultado = resultado.eq('cidade', cidade);
+
   if (nota === 'det') resultado = resultado.lte('nps_score', 6);
   else if (nota === 'pas') resultado = resultado.gte('nps_score', 7).lte('nps_score', 8);
   else if (nota === 'pro') resultado = resultado.gte('nps_score', 9);
   else if (nota !== '') resultado = resultado.eq('nps_score', Number(nota));
 
-  if (tipo === 'operadora' && cidade) resultado = resultado.eq('cidade', cidade);
+  return resultado;
 };
 
 export const fetchComentariosFiltrados = async (offset, limite, filtros) => {
@@ -72,6 +74,7 @@ export const fetchComentariosFiltrados = async (offset, limite, filtros) => {
   return data.map((linha) => ({ ...linha, comentario: linha.categoria_comentario }));
 };
 
+const mesLocal = (data) => new Date(data).toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' }).slice(0, 7);
 export const fetchComentariosParaAnalise = async (filtros) => {
   const consulta = supabase
     .from('respostas_pesquisa')
