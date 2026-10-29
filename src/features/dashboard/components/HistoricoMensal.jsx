@@ -5,7 +5,7 @@ const X1 = 580;
 const TOPO = 34;
 const BASE = 160;
 const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-const COR_ATUAL = '#29a9e0';
+const COR_ATUAL = 'rgb(224, 41, 41)';
 const COR_ANTERIOR = '#8aa0b3';
 
 const trechosDe = (valores, xDe, yDe) => {
