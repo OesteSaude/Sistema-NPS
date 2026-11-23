@@ -400,7 +400,8 @@
   color: #4a6275;
 }
 
-.dash-modal-campo select {
+.dash-modal-campo select,
+.dash-modal-campo input[type="date"] {
   font: inherit;
   font-size: 14px;
   padding: 10px 12px;
@@ -410,9 +411,32 @@
   color: #0f2d44;
 }
 
+.dash-modal-datas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
 .dash-modal-acoes {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-top: 8px;
 }
+
+.dash-modal-confirmacao {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dash-modal-aviso-box {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background: #f4f8fb;
+  border-radius: 12px;
+  padding: 16px;
+  border-left: 4px solid #29a9e0;
+}
+

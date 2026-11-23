@@ -99,3 +99,13 @@ export const fetchRespostasParaExportacao = async (filtros) => {
   const data = await run(aplicarFiltros(consulta, filtros));
   return data;
 };
+
+export const fetchHistoricoNotasMes = async (mes) => {
+  return run(
+    supabase
+      .from('historico_mensal_notas')
+      .select('nota, quantidade')
+      .eq('mes', mes)
+      .order('nota', { ascending: false }),
+  );
+};

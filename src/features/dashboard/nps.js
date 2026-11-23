@@ -19,6 +19,12 @@ export function formatMes(isoDate) {
   return `${MESES[Number(mes) - 1]} de ${ano}`;
 }
 
+export function getNomeMes(isoDate) {
+  if (!isoDate) return '';
+  const [, mes] = isoDate.split('-');
+  return MESES[Number(mes) - 1] ?? '';
+}
+
 const STOPWORDS = new Set(
   'a o as os um uma uns umas de do da dos das em no na nos nas por para pra com sem e ou mas que se ao aos à às pelo pela pelos pelas eu me meu minha seu sua nosso foi foram ser é são era estou está estão ter tem tinha muito muita mais menos já não sim também só então como quando onde tudo todo toda todos todas isso isto esse essa esses essas este esta aquele aquela lá aqui bem'.split(' '),
 );
