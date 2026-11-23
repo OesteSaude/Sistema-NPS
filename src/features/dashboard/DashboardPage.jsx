@@ -23,8 +23,9 @@ export default function DashboardPage() {
   const [resumo, setResumo] = useState(null);
   const [anual, setAnual] = useState([]);
   const [status, setStatus] = useState('carregando');
+  const [menuAberto, setMenuAberto] = useState(false);
 
-    useEffect(() => {
+  useEffect(() => {
     setStatus('carregando');
     setMesBase(null);
     setResumo(null);

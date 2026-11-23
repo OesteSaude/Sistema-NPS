@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabaseClient';
+import { intervaloPeriodo } from './dashboardExtras';
 
 async function run(query) {
   const { data, error } = await query;
@@ -56,7 +57,7 @@ const aplicarFiltros = (consulta, { tipo, nota, unidadeId, cidade, inicio, fim }
   if (nota === 'det') resultado = resultado.lte('nps_score', 6);
   else if (nota === 'pas') resultado = resultado.gte('nps_score', 7).lte('nps_score', 8);
   else if (nota === 'pro') resultado = resultado.gte('nps_score', 9);
-  else if (nota !== '') resultado = resultado.eq('nps_score', Number(nota));
+  else if (nota !== '' && nota !== undefined && nota !== null) resultado = resultado.eq('nps_score', Number(nota));
 
   return resultado;
 };
@@ -86,4 +87,15 @@ export const fetchComentariosParaAnalise = async (filtros) => {
 
   const data = await run(aplicarFiltros(consulta, filtros));
   return data.map((linha) => ({ mes: mesLocal(linha.created_at), texto: linha.categoria_comentario }));
+};
+
+export const fetchRespostasParaExportacao = async (filtros) => {
+  const consulta = supabase
+    .from('respostas_pesquisa')
+    .select('created_at, nps_score, unidade_id, cidade, categoria_comentario')
+    .order('created_at', { ascending: false })
+    .limit(10000);
+
+  const data = await run(aplicarFiltros(consulta, filtros));
+  return data;
 };
