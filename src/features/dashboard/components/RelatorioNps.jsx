@@ -2,11 +2,11 @@ import { forwardRef } from 'react';
 import GaugeNps from './GaugeNps';
 import HistoricoMensal from './HistoricoMensal';
 import RoscaJanela from './RoscaJanela';
-import { META_NPS, TIPOS, getZona, formatInt, formatPct, formatMes } from '../nps';
+import { META_NPS, TIPOS, getZona, formatInt, formatPct, formatMes, resolverNps } from '../nps';
 import './RelatorioNps.css';
 
 const RelatorioNps = forwardRef(function RelatorioNps({ mesBase, resumo, anual, janelas, palavras, tipo }, ref) {
-  const nps = Number(resumo.nps_score);
+  const nps = resolverNps(resumo);
   const zona = getZona(nps);
 
   return (

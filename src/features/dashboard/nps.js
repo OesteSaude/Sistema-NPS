@@ -25,6 +25,31 @@ export function getNomeMes(isoDate) {
   return MESES[Number(mes) - 1] ?? '';
 }
 
+export function calcularNps(promotores, detratores, total) {
+  const tot = Number(total);
+  if (!tot || tot <= 0) return null;
+  const pro = Number(promotores ?? 0);
+  const det = Number(detratores ?? 0);
+  return Math.round((100 * (pro - det)) / tot);
+}
+
+export function resolverNps(item) {
+  if (!item) return 0;
+  const score =
+    item.nps_score !== null && item.nps_score !== undefined && item.nps_score !== ''
+      ? Number(item.nps_score)
+      : null;
+  const total = Number(item.total ?? 0);
+  const promotores = Number(item.promotores ?? 0);
+  const detratores = Number(item.detratores ?? 0);
+
+  if (score === null || (score === 0 && total > 0 && promotores > 0 && detratores === 0)) {
+    const calculado = calcularNps(promotores, detratores, total);
+    if (calculado !== null) return calculado;
+  }
+  return score ?? 0;
+}
+
 const STOPWORDS = new Set(
   'a o as os um uma uns umas de do da dos das em no na nos nas por para pra com sem e ou mas que se ao aos à às pelo pela pelos pelas eu me meu minha seu sua nosso foi foram ser é são era estou está estão ter tem tinha muito muita mais menos já não sim também só então como quando onde tudo todo toda todos todas isso isto esse essa esses essas este esta aquele aquela lá aqui bem'.split(' '),
 );

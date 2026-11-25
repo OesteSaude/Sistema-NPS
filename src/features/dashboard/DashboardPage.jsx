@@ -5,7 +5,7 @@ import PageShell from '../../components/PageShell';
 import { useAuth } from '../../context/AuthContext';
 import { fetchMesesDisponiveis, fetchResumoMes } from './dashboardQueries';
 import { fetchResumoMensalCompleto } from './dashboardExtras';
-import { META_NPS, TIPOS, getZona, formatInt, formatPct, formatMes, getNomeMes } from './nps';
+import { META_NPS, TIPOS, getZona, formatInt, formatPct, formatMes, getNomeMes, resolverNps } from './nps';
 import KpiCard from './components/KpiCard';
 import GaugeNps from './components/GaugeNps';
 import DonutRespostas from './components/DonutRespostas';
@@ -61,7 +61,7 @@ export default function DashboardPage() {
   };
 
   const pronto = status === 'ok' && resumo;
-  const nps = pronto ? Number(resumo.nps_score) : 0;
+  const nps = pronto ? resolverNps(resumo) : 0;
   const zona = getZona(nps);
 
   return (
