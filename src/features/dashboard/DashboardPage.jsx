@@ -5,7 +5,7 @@ import PageShell from '../../components/PageShell';
 import { useAuth } from '../../context/AuthContext';
 import { fetchMesesDisponiveis, fetchResumoMes } from './dashboardQueries';
 import { fetchResumoMensalCompleto } from './dashboardExtras';
-import { META_NPS, TIPOS, getZona, formatInt, formatPct, formatMes } from './nps';
+import { META_NPS, TIPOS, getZona, formatInt, formatPct, formatMes, getNomeMes, resolverNps } from './nps';
 import KpiCard from './components/KpiCard';
 import GaugeNps from './components/GaugeNps';
 import DonutRespostas from './components/DonutRespostas';
@@ -24,7 +24,7 @@ export default function DashboardPage() {
   const [anual, setAnual] = useState([]);
   const [status, setStatus] = useState('carregando');
 
-    useEffect(() => {
+  useEffect(() => {
     setStatus('carregando');
     setMesBase(null);
     setResumo(null);
@@ -48,8 +48,20 @@ export default function DashboardPage() {
       .catch(() => setStatus('erro'));
   }, [mesBase]);
 
+  const anos = Array.from(new Set(meses.map((m) => m.slice(0, 4)))).sort((a, b) => b.localeCompare(a));
+  const anoSelecionado = mesBase ? mesBase.slice(0, 4) : anos[0] ?? '';
+  const mesesDoAno = meses.filter((m) => m.startsWith(anoSelecionado));
+
+  const handleAnoChange = (novoAno) => {
+    const mesesDaqueleAno = meses.filter((m) => m.startsWith(novoAno));
+    const sufixoMes = mesBase ? mesBase.slice(4, 7) : '-01';
+    const candidato = `${novoAno}${sufixoMes}-01`;
+    const proximo = mesesDaqueleAno.find((m) => m === candidato) ?? mesesDaqueleAno[0] ?? null;
+    setMesBase(proximo);
+  };
+
   const pronto = status === 'ok' && resumo;
-  const nps = pronto ? Number(resumo.nps_score) : 0;
+  const nps = pronto ? resolverNps(resumo) : 0;
   const zona = getZona(nps);
 
   return (
@@ -72,11 +84,29 @@ export default function DashboardPage() {
               </select>
             </label>
             <label>
-              Mês base
-              <select value={mesBase ?? ''} onChange={(evento) => setMesBase(evento.target.value)} disabled={!mesBase}>
-                {meses.map((mes) => (
+              Ano
+              <select
+                value={anoSelecionado}
+                onChange={(evento) => handleAnoChange(evento.target.value)}
+                disabled={anos.length === 0}
+              >
+                {anos.map((ano) => (
+                  <option key={ano} value={ano}>
+                    {ano}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Mês
+              <select
+                value={mesBase ?? ''}
+                onChange={(evento) => setMesBase(evento.target.value)}
+                disabled={!mesBase}
+              >
+                {mesesDoAno.map((mes) => (
                   <option key={mes} value={mes}>
-                    {formatMes(mes)}
+                    {getNomeMes(mes)}
                   </option>
                 ))}
               </select>

@@ -1,4 +1,4 @@
-import { META_NPS } from '../nps';
+import { META_NPS, resolverNps } from '../nps';
 
 const X0 = 60;
 const X1 = 580;
@@ -27,7 +27,12 @@ export default function HistoricoMensal({ meses, mesBase }) {
   const ano = Number(mesBase.slice(0, 4));
   const mesAtual = Number(mesBase.slice(5, 7));
   const porMes = new Map(
-    meses.map((item) => [item.mes, item.nps_score === null ? null : Number(item.nps_score)]),
+    meses.map((item) => {
+      const temTotal = item.total !== undefined && item.total !== null;
+      if (temTotal && Number(item.total) === 0) return [item.mes, null];
+      const score = resolverNps(item);
+      return [item.mes, (temTotal && Number(item.total) > 0) || item.nps_score !== null ? score : null];
+    }),
   );
 
   const serie = (anoSerie, ate) =>
